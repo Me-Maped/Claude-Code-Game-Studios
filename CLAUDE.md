@@ -3,6 +3,11 @@
 Indie game development managed through 49 coordinated Claude Code subagents.
 Each agent owns a specific domain, enforcing separation of concerns and quality.
 
+> **Language Constraint (运行时约束)**: 所有面向用户的自然语言输出必须使用简体中文。
+> 保留所有技术标识符英文原样：文件路径、命令 (`/start`, `/brainstorm` 等)、
+> Gate ID (`CD-PILLARS`, `TD-FEASIBILITY` 等)、agent/skill 名称、变量名、函数名、
+> 类名、URL、代码块中的代码本身。文档模板中的占位符说明文字使用中文。
+
 ## Technology Stack
 
 - **Engine**: [CHOOSE: Godot 4 / Unity / Unreal Engine 5]
