@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3]
+
+[ext_resource type="Script" path="res://src/lynx-framework/Tests/Phase5Test.cs" id="1"]
+
+[node name="Phase5TestScene" type="Node"]
+script = ExtResource("1")

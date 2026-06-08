@@ -46,6 +46,10 @@ export_presets.cfg
 # Uncomment if using Godot:
 # *.import
 
+# Godot C# project files (tracked)
+!LynxFramework.csproj
+!LynxFramework.sln
+
 # === Engine: Unity ===
 [Ll]ibrary/
 [Tt]emp/

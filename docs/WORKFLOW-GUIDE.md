@@ -1,18 +1,14 @@
-# Claude Code Game Studios -- Complete Workflow Guide
+# Claude Code Game Studios -- 完整 Workflow Guide
 
-> **How to go from zero to a shipped game using the Agent Architecture.**
+> **如何使用 Agent Architecture 从零开始做出并发布一款游戏。**
 >
-> This guide walks you through every phase of game development using the
-> 49-agent system, 73 slash commands, and 12 automated hooks. It assumes you
-> have Claude Code installed and are working from the project root.
+> 本 guide 会带你走完使用 49-agent system、73 个 slash commands 和 12 个 automated hooks 进行游戏开发的每个阶段。它假设你已经安装 Claude Code，并且正在 project root 下工作。
 >
-> The pipeline has 7 phases. Each phase has a formal gate (`/gate-check`)
-> that must pass before you advance. The authoritative phase sequence is
-> defined in `.claude/docs/workflow-catalog.yaml` and read by `/help`.
+> pipeline 一共有 7 个 phase。每个 phase 都有正式的 gate（`/gate-check`），必须通过后才能进入下一阶段。权威 phase sequence 定义在 `.claude/docs/workflow-catalog.yaml` 中，并由 `/help` 读取。
 
 ---
 
-## Table of Contents
+## 目录
 
 1. [Quick Start](#quick-start)
 2. [Phase 1: Concept](#phase-1-concept)
@@ -31,14 +27,14 @@
 
 ## Quick Start
 
-### What You Need
+### 你需要准备什么
 
-Before you start, make sure you have:
+开始前，请确认你具备：
 
-- **Claude Code** installed and working
-- **Git** with Git Bash (Windows) or standard terminal (Mac/Linux)
-- **jq** (optional but recommended -- hooks fall back to `grep` if missing)
-- **Python 3** (optional -- some hooks use it for JSON validation)
+- **Claude Code** 已安装并可正常运行
+- **Git**，Windows 使用 Git Bash，Mac/Linux 使用标准 terminal
+- **jq**（可选但推荐；如果缺失，hooks 会回退到 `grep`）
+- **Python 3**（可选；部分 hooks 会用它做 JSON validation）
 
 ### Step 1: Clone and Open
 
@@ -49,25 +45,23 @@ cd my-game
 
 ### Step 2: Run /start
 
-If this is your first session:
+如果这是你的第一次 session：
 
 ```
 /start
 ```
 
-This guided onboarding asks where you are and routes you to the right phase:
+这个 guided onboarding 会询问你当前处于什么状态，并把你路由到正确的 phase：
 
-- **Path A** -- No idea yet: routes to `/brainstorm`
-- **Path B** -- Vague idea: routes to `/brainstorm` with seed
-- **Path C** -- Clear concept: routes to `/setup-engine` and `/map-systems`
-- **Path D1** -- Existing project, few artifacts: normal flow
-- **Path D2** -- Existing project, GDDs/ADRs exist: runs `/project-stage-detect`
-  then `/adopt` for brownfield migration
+- **Path A** -- 还没有想法：路由到 `/brainstorm`
+- **Path B** -- 有模糊想法：带 seed 路由到 `/brainstorm`
+- **Path C** -- 已有清晰 concept：路由到 `/setup-engine` 和 `/map-systems`
+- **Path D1** -- 现有项目，artifact 较少：走正常 flow
+- **Path D2** -- 现有项目，已有 GDDs/ADRs：先运行 `/project-stage-detect`，再运行 `/adopt` 做 brownfield migration
 
-### Step 3: Verify Hooks Are Working
+### Step 3: 验证 Hooks 是否正常工作
 
-Start a new Claude Code session. You should see output from the
-`session-start.sh` hook:
+启动一个新的 Claude Code session。你应该看到来自 `session-start.sh` hook 的输出：
 
 ```
 === Claude Code Game Studios -- Session Context ===
@@ -77,27 +71,24 @@ Recent commits:
 ===================================
 ```
 
-If you see this, hooks are working. If not, check `.claude/settings.json` to
-make sure the hook paths are correct for your OS.
+如果你看到了这些内容，说明 hooks 正常工作。如果没有，请检查 `.claude/settings.json`，确认 hook paths 对你的 OS 是正确的。
 
-### Step 4: Ask for Help Anytime
+### Step 4: 随时请求帮助
 
-At any point, run:
+任何时候都可以运行：
 
 ```
 /help
 ```
 
-This reads your current phase from `production/stage.txt`, checks which
-artifacts exist, and tells you exactly what to do next. It distinguishes
-between REQUIRED next steps and OPTIONAL opportunities.
+它会从 `production/stage.txt` 读取当前 phase，检查已有 artifacts，然后明确告诉你下一步应该做什么。它会区分 REQUIRED next steps 和 OPTIONAL opportunities。
 
-### Step 5: Create Your Directory Structure
+### Step 5: 创建目录结构
 
-Directories are created as needed. The system expects this layout:
+目录会按需创建。系统期望以下 layout：
 
 ```
-src/                  # Game source code
+src/                  # 游戏源代码
   core/               # Engine/framework code
   gameplay/           # Gameplay systems
   ai/                 # AI systems
@@ -132,21 +123,15 @@ production/           # Sprint plans, milestones, releases
   session-logs/       # Session audit trail (gitignored)
 ```
 
-> **Tip:** You do not need all of these on day one. Create directories as you
-> reach the phase that needs them. The important thing is to follow this
-> structure when you do create them, because the **rules system** enforces
-> standards based on file paths. Code in `src/gameplay/` gets gameplay rules,
-> code in `src/ai/` gets AI rules, and so on.
+> **Tip:** 第一天不需要创建所有目录。到达需要它们的 phase 时再创建即可。关键是创建时遵循这个 structure，因为 **rules system** 会基于 file paths 强制执行 standards。`src/gameplay/` 中的 code 会应用 gameplay rules，`src/ai/` 中的 code 会应用 AI rules，依此类推。
 
 ---
 
 ## Phase 1: Concept
 
-### What Happens in This Phase
+### 本 Phase 会发生什么
 
-You go from "no idea" or "vague idea" to a structured game concept document
-with defined pillars and a player journey. This is where you figure out
-**what** you are making and **why**.
+你会从“没有想法”或“模糊想法”推进到一个结构化的 game concept document，其中包含明确的 pillars 和 player journey。这里要弄清楚你在做**什么**以及**为什么**做。
 
 ### Phase 1 Pipeline
 
@@ -172,93 +157,85 @@ with defined pillars and a player journey. This is where you figure out
                                                              priority tiers)
 ```
 
-### Step 1.1: Brainstorm With /brainstorm
+### Step 1.1: 使用 /brainstorm 进行 Brainstorm
 
-This is your starting point. Run the brainstorm skill:
+这是起点。运行 brainstorm skill：
 
 ```
 /brainstorm
 ```
 
-Or with a genre hint:
+或者带上 genre hint：
 
 ```
 /brainstorm roguelike deckbuilder
 ```
 
-**What happens:** The brainstorm skill guides you through a collaborative 6-phase
-ideation process using professional studio techniques:
+**会发生什么：** brainstorm skill 会使用专业 studio techniques，引导你完成一个协作式 6-phase ideation process：
 
-1. Asks about your interests, themes, and constraints
-2. Generates 10 concept seeds with MDA (Mechanics, Dynamics, Aesthetics) analysis
-3. You pick 2-3 favorites for deep analysis
-4. Performs player motivation mapping and audience targeting
-5. You choose the winning concept
-6. Formalizes it into `design/gdd/game-concept.md`
+1. 询问你的兴趣、主题和 constraints
+2. 生成 10 个 concept seeds，并附带 MDA（Mechanics, Dynamics, Aesthetics）analysis
+3. 你挑选 2-3 个最喜欢的方向做 deep analysis
+4. 执行 player motivation mapping 和 audience targeting
+5. 你选择最终 concept
+6. 将其整理成 `design/gdd/game-concept.md`
 
-The concept document includes:
+concept document 包含：
 
-- Elevator pitch (one sentence)
-- Core fantasy (what the player imagines themselves doing)
+- Elevator pitch（一句话）
+- Core fantasy（玩家想象自己在做什么）
 - MDA breakdown
-- Target audience (Bartle types, demographics)
+- Target audience（Bartle types, demographics）
 - Core loop diagram
 - Unique selling proposition
 - Comparable titles and differentiation
-- Game pillars (3-5 non-negotiable design values)
-- Anti-pillars (things the game intentionally avoids)
+- Game pillars（3-5 个不可妥协的 design values）
+- Anti-pillars（游戏刻意避免的事项）
 
-### Step 1.2: Review the Concept (Optional but Recommended)
+### Step 1.2: Review the Concept（可选但推荐）
 
 ```
 /design-review design/gdd/game-concept.md
 ```
 
-Validates structure and completeness before you proceed.
+在继续前验证 structure 和 completeness。
 
-### Step 1.3: Choose Your Engine
+### Step 1.3: 选择 Engine
 
 ```
 /setup-engine
 ```
 
-Or with a specific engine:
+或者指定 engine：
 
 ```
 /setup-engine godot 4.6
 ```
 
-**What /setup-engine does:**
+**/setup-engine 会做什么：**
 
-- Populates `.claude/docs/technical-preferences.md` with naming conventions,
-  performance budgets, and engine-specific defaults
-- Detects knowledge gaps (engine version newer than LLM training data) and
-  advises cross-referencing `docs/engine-reference/`
-- Creates version-pinned reference docs in `docs/engine-reference/`
+- 填充 `.claude/docs/technical-preferences.md`，包含 naming conventions、performance budgets 和 engine-specific defaults
+- 检测 knowledge gaps（engine version 新于 LLM training data）并建议交叉参考 `docs/engine-reference/`
+- 在 `docs/engine-reference/` 中创建 version-pinned reference docs
 
-**Why this matters:** Once you set the engine, the system knows which
-engine-specialist agents to use. If you pick Godot, agents like
-`godot-specialist`, `godot-gdscript-specialist`, and `godot-shader-specialist`
-become your go-to experts.
+**为什么这很重要：** 一旦设置了 engine，系统就知道应该使用哪些 engine-specialist agents。如果选择 Godot，`godot-specialist`、`godot-gdscript-specialist`、`godot-shader-specialist` 等 agents 会成为你的常用专家。
 
-### Step 1.4: Decompose Your Concept Into Systems
+### Step 1.4: 将 Concept 拆解为 Systems
 
-Before writing individual GDDs, enumerate all the systems your game needs:
+在编写各个 GDDs 之前，先枚举游戏需要的所有 systems：
 
 ```
 /map-systems
 ```
 
-This creates `design/gdd/systems-index.md` -- a master tracking document that:
+这会创建 `design/gdd/systems-index.md`，一个 master tracking document，用于：
 
-- Lists every system your game needs (combat, movement, UI, etc.)
-- Maps dependencies between systems
-- Assigns priority tiers (MVP, Vertical Slice, Alpha, Full Vision)
-- Determines design order (Foundation > Core > Feature > Presentation > Polish)
+- 列出游戏需要的每个 system（combat、movement、UI 等）
+- 映射 systems 之间的 dependencies
+- 分配 priority tiers（MVP, Vertical Slice, Alpha, Full Vision）
+- 确定 design order（Foundation > Core > Feature > Presentation > Polish）
 
-This step is **required** before proceeding to Phase 2. Research from 155 game
-postmortems confirms that skipping systems enumeration costs 5-10x more in
-production.
+这是进入 Phase 2 前的**必需**步骤。来自 155 份 game postmortems 的研究确认，跳过 systems enumeration 会让 production 成本增加 5-10 倍。
 
 ### Phase 1 Gate
 
@@ -266,25 +243,21 @@ production.
 /gate-check concept
 ```
 
-**Requirements to pass:**
+**通过要求：**
 
-- Engine configured in `technical-preferences.md`
-- `design/gdd/game-concept.md` exists with pillars
-- `design/gdd/systems-index.md` exists with dependency ordering
+- Engine 已在 `technical-preferences.md` 中配置
+- `design/gdd/game-concept.md` 存在并包含 pillars
+- `design/gdd/systems-index.md` 存在并包含 dependency ordering
 
-**Verdict:** PASS / CONCERNS / FAIL. CONCERNS is passable with acknowledged
-risks. FAIL blocks advancement.
+**Verdict:** PASS / CONCERNS / FAIL。CONCERNS 在风险被承认后可以通过；FAIL 会阻止进入下一阶段。
 
 ---
 
 ## Phase 2: Systems Design
 
-### What Happens in This Phase
+### 本 Phase 会发生什么
 
-You create all the design documents that define how your game works. Nothing
-gets coded yet -- this is pure design. Each system identified in the systems
-index gets its own GDD, authored section by section, reviewed individually,
-and then all GDDs are cross-checked for consistency.
+你会创建所有定义游戏如何运作的 design documents。此时还不写 code，这一阶段是纯 design。systems index 中识别出的每个 system 都会有自己的 GDD，并按 section 编写、单独 review，最后所有 GDDs 会一起做 consistency cross-check。
 
 ### Phase 2 Pipeline
 
@@ -305,113 +278,105 @@ and then all GDDs are cross-checked for consistency.
   PASS / CONCERNS / FAIL
 ```
 
-### Step 2.1: Author System GDDs
+### Step 2.1: 编写 System GDDs
 
-Design each system in dependency order using the guided workflow:
+按照 dependency order 使用 guided workflow 设计每个 system：
 
 ```
 /map-systems next
 ```
 
-This picks the highest-priority undesigned system and hands off to
-`/design-system`, which guides you through creating its GDD section by section.
+它会选择最高优先级且尚未设计的 system，并交给 `/design-system`，后者会逐 section 引导你创建该 system 的 GDD。
 
-You can also design a specific system directly:
+你也可以直接设计指定 system：
 
 ```
 /design-system combat-system
 ```
 
-**What /design-system does:**
+**/design-system 会做什么：**
 
-1. Reads your game concept, systems index, and any upstream/downstream GDDs
-2. Runs a Technical Feasibility Pre-Check (domain mapping + feasibility brief)
-3. Walks you through each of the 8 required GDD sections one at a time
-4. Each section follows: Context > Questions > Options > Decision > Draft > Approval > Write
-5. Each section is written to file immediately after approval (survives crashes)
-6. Flags conflicts with existing approved GDDs
-7. Routes to specialist agents per category (systems-designer for math,
-   economy-designer for economy, narrative-director for story systems)
+1. 读取你的 game concept、systems index，以及任何 upstream/downstream GDDs
+2. 运行 Technical Feasibility Pre-Check（domain mapping + feasibility brief）
+3. 逐一引导你完成 8 个 required GDD sections
+4. 每个 section 遵循：Context > Questions > Options > Decision > Draft > Approval > Write
+5. 每个 section 在 approval 后立即写入文件（即使 crash 也能保留）
+6. 标记与现有 approved GDDs 的冲突
+7. 按 category 路由到 specialist agents（systems-designer 负责 math，economy-designer 负责 economy，narrative-director 负责 story systems）
 
-**The 8 required GDD sections:**
+**8 个 required GDD sections：**
 
-| # | Section | What Goes Here |
-|---|---------|---------------|
-| 1 | **Overview** | One-paragraph summary of the system |
-| 2 | **Player Fantasy** | What the player imagines/feels when using this system |
-| 3 | **Detailed Rules** | Unambiguous mechanical rules |
-| 4 | **Formulas** | Every calculation, with variable definitions and ranges |
-| 5 | **Edge Cases** | What happens in weird situations? Explicitly resolved. |
-| 6 | **Dependencies** | What other systems this connects to (bidirectional) |
-| 7 | **Tuning Knobs** | Which values designers can safely change, with safe ranges |
-| 8 | **Acceptance Criteria** | How do you test that this works? Specific, measurable. |
+| # | Section | 内容 |
+|---|---------|------|
+| 1 | **Overview** | system 的一段式 summary |
+| 2 | **Player Fantasy** | 玩家使用该 system 时想象/感受到什么 |
+| 3 | **Detailed Rules** | 无歧义的 mechanical rules |
+| 4 | **Formulas** | 每个 calculation，包含 variable definitions 和 ranges |
+| 5 | **Edge Cases** | 异常情况如何处理，需要明确解决 |
+| 6 | **Dependencies** | 与哪些其他 systems 相连（bidirectional） |
+| 7 | **Tuning Knobs** | designers 可安全修改哪些 values，并给出 safe ranges |
+| 8 | **Acceptance Criteria** | 如何测试它有效，需要具体且可衡量 |
 
-Plus a **Game Feel** section: feel reference, input responsiveness (ms/frames),
-animation feel targets (startup/active/recovery), impact moments, weight profile.
+另有 **Game Feel** section：feel reference、input responsiveness（ms/frames）、animation feel targets（startup/active/recovery）、impact moments、weight profile。
 
-### Step 2.2: Review Each GDD
+### Step 2.2: Review 每个 GDD
 
-Before the next system starts, validate the current one:
+在开始下一个 system 前，验证当前 GDD：
 
 ```
 /design-review design/gdd/combat-system.md
 ```
 
-Checks all 8 sections for completeness, formula clarity, edge case resolution,
-bidirectional dependencies, and testable acceptance criteria.
+检查 8 个 sections 的 completeness、formula clarity、edge case resolution、bidirectional dependencies 和 testable acceptance criteria。
 
-**Verdict:** APPROVED / NEEDS REVISION / MAJOR REVISION. Only APPROVED GDDs
-should proceed.
+**Verdict:** APPROVED / NEEDS REVISION / MAJOR REVISION。只有 APPROVED GDDs 应该继续推进。
 
-### Step 2.3: Small Changes Without Full GDDs
+### Step 2.3: 不需要完整 GDDs 的小改动
 
-For tuning changes, small additions, or tweaks that do not warrant a full GDD:
+对于 tuning changes、小 additions，或不值得创建完整 GDD 的 tweaks：
 
 ```
 /quick-design "add 10% damage bonus for flanking attacks"
 ```
 
-This creates a lightweight spec in `design/quick-specs/` instead of a full
-8-section GDD. Use it for tuning, number changes, and small additions.
+它会在 `design/quick-specs/` 中创建 lightweight spec，而不是完整的 8-section GDD。用于 tuning、number changes 和 small additions。
 
 ### Step 2.4: Cross-GDD Consistency Review
 
-After all MVP system GDDs are approved individually:
+所有 MVP system GDDs 单独 approved 后：
 
 ```
 /review-all-gdds
 ```
 
-This reads ALL GDDs simultaneously and runs two analysis phases:
+它会同时读取 ALL GDDs，并运行两个 analysis phases：
 
 **Phase 1 -- Cross-GDD Consistency:**
-- Dependency bidirectionality (A references B, does B reference A?)
-- Rule contradictions between systems
-- Stale references to renamed or removed systems
-- Ownership conflicts (two systems claiming the same responsibility)
-- Formula range compatibility (does System A's output fit System B's input?)
+- Dependency bidirectionality（A references B，B 是否 reference A？）
+- Systems 之间的 rule contradictions
+- 指向 renamed 或 removed systems 的 stale references
+- Ownership conflicts（两个 systems 声称拥有同一 responsibility）
+- Formula range compatibility（System A 的 output 是否适配 System B 的 input？）
 - Acceptance criteria cross-check
 
-**Phase 2 -- Design Theory (Game Design Holism):**
-- Competing progression loops (do two systems fight for the same reward space?)
-- Cognitive load (more than 4 active systems at once?)
-- Dominant strategies (one approach that makes all others irrelevant)
-- Economic loop analysis (sources and sinks balanced?)
-- Difficulty curve consistency across systems
-- Pillar alignment and anti-pillar violations
+**Phase 2 -- Design Theory（Game Design Holism）:**
+- Competing progression loops（两个 systems 是否争夺同一 reward space？）
+- Cognitive load（一次超过 4 个 active systems？）
+- Dominant strategies（某个 approach 让其他 approach 都失去意义）
+- Economic loop analysis（sources and sinks 是否 balanced？）
+- Systems 之间 difficulty curve consistency
+- Pillar alignment 和 anti-pillar violations
 - Player fantasy coherence
 
-**Output:** `design/gdd/gdd-cross-review-[date].md` with a verdict.
+**Output:** `design/gdd/gdd-cross-review-[date].md`，包含 verdict。
 
-### Step 2.5: Narrative Design (If Applicable)
+### Step 2.5: Narrative Design（如适用）
 
-If your game has story, lore, or dialogue, this is when you build it:
+如果你的游戏包含 story、lore 或 dialogue，就在此时构建：
 
-1. **World-building** -- Use `world-builder` to define factions, history,
-   geography, and rules of your world
-2. **Story structure** -- Use `narrative-director` to design story arcs,
-   character arcs, and narrative beats
-3. **Character sheets** -- Use the `narrative-character-sheet.md` template
+1. **World-building** -- 使用 `world-builder` 定义 factions、history、geography 和 world rules
+2. **Story structure** -- 使用 `narrative-director` 设计 story arcs、character arcs 和 narrative beats
+3. **Character sheets** -- 使用 `narrative-character-sheet.md` template
 
 ### Phase 2 Gate
 
@@ -419,22 +384,19 @@ If your game has story, lore, or dialogue, this is when you build it:
 /gate-check systems-design
 ```
 
-**Requirements to pass:**
+**通过要求：**
 
-- All MVP systems in `systems-index.md` have `Status: Approved`
-- Each MVP system has a reviewed GDD
-- Cross-GDD review report exists (`design/gdd/gdd-cross-review-*.md`)
-  with verdict of PASS or CONCERNS (not FAIL)
+- `systems-index.md` 中所有 MVP systems 均为 `Status: Approved`
+- 每个 MVP system 都有 reviewed GDD
+- Cross-GDD review report 存在（`design/gdd/gdd-cross-review-*.md`），且 verdict 为 PASS 或 CONCERNS（不是 FAIL）
 
 ---
 
 ## Phase 3: Technical Setup
 
-### What Happens in This Phase
+### 本 Phase 会发生什么
 
-You make key technical decisions, document them as Architecture Decision Records
-(ADRs), validate them through review, and produce a control manifest that
-gives programmers flat, actionable rules. You also establish UX foundations.
+你会做出关键 technical decisions，将其记录为 Architecture Decision Records（ADRs），通过 review 验证，并生成一份 control manifest，为 programmers 提供扁平、可执行的 rules。你也会建立 UX foundations。
 
 ### Phase 3 Pipeline
 
@@ -466,38 +428,35 @@ gives programmers flat, actionable rules. You also establish UX foundations.
 /create-architecture
 ```
 
-Creates the overarching architecture document in `docs/architecture/architecture.md`
-covering system boundaries, data flow, and integration points.
+创建 overarching architecture document：`docs/architecture/architecture.md`，覆盖 system boundaries、data flow 和 integration points。
 
-### Step 3.2: Architecture Decision Records (ADRs)
+### Step 3.2: Architecture Decision Records（ADRs）
 
-For each significant technical decision:
+对每个重要 technical decision：
 
 ```
 /architecture-decision "State Machine vs Behavior Tree for NPC AI"
 ```
 
-**What happens:** The skill guides you through creating an ADR with:
-- Context and decision drivers
-- All options with pros/cons and engine compatibility
-- Chosen option with rationale
-- Consequences (positive, negative, risks)
-- Dependencies (Depends On, Enables, Blocks, Ordering Note)
-- GDD Requirements Addressed (linked by TR-ID)
+**会发生什么：** skill 会引导你创建 ADR，包含：
+- Context 和 decision drivers
+- 所有 options，附 pros/cons 和 engine compatibility
+- Chosen option 及 rationale
+- Consequences（positive, negative, risks）
+- Dependencies（Depends On, Enables, Blocks, Ordering Note）
+- GDD Requirements Addressed（通过 TR-ID 链接）
 
-ADRs go through a lifecycle: Proposed > Accepted > Superseded/Deprecated.
+ADRs 的 lifecycle：Proposed > Accepted > Superseded/Deprecated。
 
-**Minimum 3 Foundation-layer ADRs are required** before the gate check.
+**gate check 前至少需要 3 个 Foundation-layer ADRs。**
 
-**Retrofitting existing ADRs:** If you already have ADRs from a brownfield
-project:
+**Retrofitting existing ADRs:** 如果你已有来自 brownfield project 的 ADRs：
 
 ```
 /architecture-decision retrofit docs/architecture/adr-005.md
 ```
 
-This detects which template sections are missing and adds only those, never
-overwriting existing content.
+它会检测缺少哪些 template sections，并只补充缺失部分，不覆盖现有内容。
 
 ### Step 3.3: Architecture Review
 
@@ -505,11 +464,11 @@ overwriting existing content.
 /architecture-review
 ```
 
-Validates all ADRs together:
-- Topological sort of ADR dependencies (detects cycles)
+整体验证所有 ADRs：
+- ADR dependencies 的 topological sort（检测 cycles）
 - Engine compatibility verification
-- GDD Revision Flags (flags GDD sections that need updates based on ADR choices)
-- TR-ID registry maintenance (`docs/architecture/tr-registry.yaml`)
+- GDD Revision Flags（基于 ADR choices 标记需要更新的 GDD sections）
+- TR-ID registry maintenance（`docs/architecture/tr-registry.yaml`）
 
 ### Step 3.4: Control Manifest
 
@@ -517,24 +476,19 @@ Validates all ADRs together:
 /create-control-manifest
 ```
 
-Takes all Accepted ADRs and produces a flat programmer rules sheet:
+读取所有 Accepted ADRs，生成扁平的 programmer rules sheet：
 
 ```
 docs/architecture/control-manifest.md
 ```
 
-This contains Required patterns, Forbidden patterns, and Guardrails organized
-by code layer. Stories created later embed the manifest version date so
-staleness can be detected.
+它包含按 code layer 组织的 Required patterns、Forbidden patterns 和 Guardrails。后续创建的 stories 会嵌入 manifest version date，以便检测 staleness。
 
 ### Step 3.5: Accessibility Requirements
 
-Create `design/accessibility-requirements.md` using the template. Commit to a
-tier (Basic / Standard / Comprehensive / Exemplary) and fill the 4-axis feature
-matrix (visual, motor, cognitive, auditory).
+使用 template 创建 `design/accessibility-requirements.md`。选择一个 tier（Basic / Standard / Comprehensive / Exemplary），并填写 4-axis feature matrix（visual, motor, cognitive, auditory）。
 
-This document is required in Phase 3 because UX specs (written in Phase 4)
-reference this tier — it is a design prerequisite, not a UX deliverable.
+这个 document 在 Phase 3 必需，因为 Phase 4 编写的 UX specs 会 reference 该 tier；它是 design prerequisite，而不是 UX deliverable。
 
 ### Phase 3 Gate
 
@@ -542,23 +496,21 @@ reference this tier — it is a design prerequisite, not a UX deliverable.
 /gate-check technical-setup
 ```
 
-**Requirements to pass:**
+**通过要求：**
 
-- `docs/architecture/architecture.md` exists
-- At least 3 ADRs exist and are Accepted
-- Architecture review report exists
-- `docs/architecture/control-manifest.md` exists
-- `design/accessibility-requirements.md` exists
+- `docs/architecture/architecture.md` 存在
+- 至少 3 个 ADRs 存在且为 Accepted
+- Architecture review report 存在
+- `docs/architecture/control-manifest.md` 存在
+- `design/accessibility-requirements.md` 存在
 
 ---
 
 ## Phase 4: Pre-Production
 
-### What Happens in This Phase
+### 本 Phase 会发生什么
 
-You create UX specs for key screens, prototype risky mechanics, turn design
-documents into implementable stories, plan your first sprint, and build a
-Vertical Slice that proves the core loop is fun.
+你会为关键 screens 创建 UX specs，prototype 风险较高的 mechanics，将 design documents 转换为可实现的 stories，规划第一个 sprint，并构建一个证明 core loop 有趣的 Vertical Slice。
 
 ### Phase 4 Pipeline
 
@@ -582,10 +534,9 @@ Vertical Slice that proves the core loop is fun.
                                                           routes to right agent)
 ```
 
-### Step 4.1: UX Specs for Key Screens
+### Step 4.1: 关键 Screens 的 UX Specs
 
-Before writing epics, create UX specs so that story authors know what screens
-exist and what player interactions they must support.
+在编写 epics 前，先创建 UX specs，让 story authors 知道有哪些 screens，以及它们必须支持哪些 player interactions。
 
 **UX Specs:**
 
@@ -594,16 +545,11 @@ exist and what player interactions they must support.
 /ux-design core-gameplay-hud
 ```
 
-Three modes: screen/flow, HUD, and interaction patterns. Output goes to
-`design/ux/`. Each spec includes: player need, layout zones, states,
-interaction map, data requirements, events fired, accessibility, localization.
+三种 modes：screen/flow、HUD、interaction patterns。输出到 `design/ux/`。每个 spec 包含：player need、layout zones、states、interaction map、data requirements、events fired、accessibility、localization。
 
-Reads your `accessibility-requirements.md` (written in Phase 3) and your
-input method config from `technical-preferences.md` to drive accessibility
-and input coverage checks — no need to re-specify them per screen.
+它会读取 Phase 3 写好的 `accessibility-requirements.md`，以及 `technical-preferences.md` 中的 input method config，用于驱动 accessibility 和 input coverage checks；无需每个 screen 重新指定。
 
-> **Tip:** `/design-system` emits a 📌 UX Flag for every system with UI
-> requirements. Use those flags as a checklist for which screens need specs.
+> **Tip:** `/design-system` 会为每个带 UI requirements 的 system 输出 📌 UX Flag。用这些 flags 作为需要哪些 screen specs 的 checklist。
 
 **Interaction Pattern Library:**
 
@@ -611,9 +557,7 @@ and input coverage checks — no need to re-specify them per screen.
 /ux-design interaction-patterns
 ```
 
-Create `design/ux/interaction-patterns.md` — 16 standard controls plus
-game-specific patterns (inventory slot, ability icon, HUD bar, dialogue box,
-etc.) with animation and sound standards.
+创建 `design/ux/interaction-patterns.md`，包含 16 个 standard controls，加上 game-specific patterns（inventory slot、ability icon、HUD bar、dialogue box 等），并定义 animation 和 sound standards。
 
 **UX Review:**
 
@@ -621,39 +565,28 @@ etc.) with animation and sound standards.
 /ux-review all
 ```
 
-Validates UX specs for GDD alignment and accessibility tier compliance.
-Produces APPROVED / NEEDS REVISION / MAJOR REVISION NEEDED verdict.
+验证 UX specs 是否符合 GDD alignment 和 accessibility tier compliance。输出 APPROVED / NEEDS REVISION / MAJOR REVISION NEEDED verdict。
 
-### Step 4.2: Build the Vertical Slice
+### Step 4.2: 构建 Vertical Slice
 
-The vertical slice is the production-quality proof that you can build the full
-game loop end-to-end before committing to full Production.
+Vertical Slice 是 production-quality proof，用来证明在投入完整 Production 前，你可以端到端构建完整 game loop。
 
 ```
 /vertical-slice
 ```
 
-**What it proves:** Does a player, starting from nothing, experience the core
-fantasy within a few minutes, without developer guidance?
+**它证明什么：** 玩家从零开始，能否在几分钟内、无需 developer guidance 地体验到 core fantasy？
 
-**What it builds:** A near-production-quality playable build covering at least
-one complete [start → challenge → resolution] cycle. Uses real architecture
-layers, real naming conventions, no hardcoded values — but not final art or
-audio. This is not a throwaway like the concept prototype; it demonstrates
-production pipeline feasibility.
+**它构建什么：** 一个接近 production-quality 的 playable build，覆盖至少一个完整的 [start → challenge → resolution] cycle。使用真实 architecture layers、真实 naming conventions、无 hardcoded values；但不要求 final art 或 audio。它不是 concept prototype 那样的一次性 throwaway；它证明 production pipeline feasibility。
 
-**Note on concept prototyping:** If you ran `/prototype` in Phase 1 (Concept),
-you already validated the core idea is fun. The vertical slice now validates
-you can build it properly. They answer different questions. If you skipped the
-concept prototype, now is a reasonable time to run one first before investing
-in the full slice.
+**关于 concept prototyping：** 如果你在 Phase 1（Concept）运行过 `/prototype`，说明你已经验证 core idea 有趣。现在 Vertical Slice 验证的是你能否正确地构建它。两者回答不同问题。如果你跳过了 concept prototype，那么在投入完整 slice 前，先运行一次 prototype 是合理的。
 
-**Verdict:** The vertical slice produces a PROCEED / PIVOT / KILL verdict.
-- **PROCEED** → move to Step 4.3 (epics and stories)
-- **PIVOT** → revise affected GDDs with `/design-system [mechanic]`, then re-run `/vertical-slice`
-- **KILL** → return to `/brainstorm` with what you learned
+**Verdict:** Vertical Slice 会输出 PROCEED / PIVOT / KILL verdict。
+- **PROCEED** → 进入 Step 4.3（epics and stories）
+- **PIVOT** → 使用 `/design-system [mechanic]` 修订受影响的 GDDs，然后重新运行 `/vertical-slice`
+- **KILL** → 带着学到的内容回到 `/brainstorm`
 
-### Step 4.3: Create Epics and Stories From Design Artifacts
+### Step 4.3: 从 Design Artifacts 创建 Epics 和 Stories
 
 ```
 /create-epics layer: foundation
@@ -662,26 +595,22 @@ in the full slice.
 /create-stories [epic-slug]   # repeat for each core epic
 ```
 
-`/create-epics` reads your GDDs, ADRs, and architecture to define epic scope —
-one epic per architectural module. Then `/create-stories` breaks each epic into
-implementable story files in `production/epics/[slug]/`. Each story embeds:
-- GDD requirement references (TR-IDs, not quoted text -- stays fresh)
-- ADR references (only from Accepted ADRs; Proposed ADRs cause `Status: Blocked`)
-- Control manifest version date (for staleness detection)
+`/create-epics` 会读取 GDDs、ADRs 和 architecture 来定义 epic scope，每个 architectural module 一个 epic。然后 `/create-stories` 将每个 epic 拆成 `production/epics/[slug]/` 中的可实现 story files。每个 story 嵌入：
+- GDD requirement references（TR-IDs，不引用原文，保持新鲜）
+- ADR references（只来自 Accepted ADRs；Proposed ADRs 会导致 `Status: Blocked`）
+- Control manifest version date（用于 staleness detection）
 - Engine-specific implementation notes
-- Acceptance criteria from the GDD
+- 来自 GDD 的 acceptance criteria
 
-Once stories exist, run `/dev-story [story-path]` to implement one — it routes
-automatically to the correct programmer agent.
+stories 存在后，运行 `/dev-story [story-path]` 来实现某个 story，它会自动路由到正确的 programmer agent。
 
-### Step 4.4: Validate Stories Before Pickup
+### Step 4.4: Pickup 前验证 Stories
 
 ```
 /story-readiness production/epics/combat/story-combat-damage-calc.md
 ```
 
-Checks: Design completeness, Architecture coverage, Scope clarity, Definition
-of Done. Verdict: READY / NEEDS WORK / BLOCKED.
+检查：Design completeness、Architecture coverage、Scope clarity、Definition of Done。Verdict: READY / NEEDS WORK / BLOCKED。
 
 ### Step 4.5: Effort Estimation
 
@@ -689,32 +618,31 @@ of Done. Verdict: READY / NEEDS WORK / BLOCKED.
 /estimate production/epics/combat/story-combat-damage-calc.md
 ```
 
-Provides effort estimates with risk assessment.
+提供 effort estimates 和 risk assessment。
 
-### Step 4.6: Plan Your First Sprint
+### Step 4.6: 规划第一个 Sprint
 
 ```
 /sprint-plan new
 ```
 
-**What happens:** The `producer` agent collaborates on sprint planning:
-- Asks for sprint goal and available time
-- Breaks the goal into Must Have / Should Have / Nice to Have tasks
-- Identifies risks and blockers
-- Creates `production/sprints/sprint-01.md`
-- Populates `production/sprint-status.yaml` (machine-readable story tracking)
+**会发生什么：** `producer` agent 会协作进行 sprint planning：
+- 询问 sprint goal 和 available time
+- 将目标拆成 Must Have / Should Have / Nice to Have tasks
+- 识别 risks 和 blockers
+- 创建 `production/sprints/sprint-01.md`
+- 填充 `production/sprint-status.yaml`（machine-readable story tracking）
 
-### Step 4.7: Vertical Slice (Hard Gate)
+### Step 4.7: Vertical Slice（Hard Gate）
 
-Before advancing to Production, you must build and playtest a Vertical Slice:
+进入 Production 前，必须构建并 playtest 一个 Vertical Slice：
 
-- One complete end-to-end core loop, playable from start to finish
-- Representative quality (not placeholder everything)
-- Played unguided in at least 3 sessions
-- Playtest report written (`/playtest-report`)
+- 一个完整端到端 core loop，可从开始玩到结束
+- Representative quality（不能全部是 placeholder）
+- 至少 3 次 unguided sessions
+- 已编写 playtest report（`/playtest-report`）
 
-This is a **hard gate** -- `/gate-check` will auto-FAIL if a human has not
-played the build unguided.
+这是 **hard gate**；如果没有人类 unguided 地玩过 build，`/gate-check` 会自动 FAIL。
 
 ### Phase 4 Gate
 
@@ -722,27 +650,24 @@ played the build unguided.
 /gate-check pre-production
 ```
 
-**Requirements to pass:**
+**通过要求：**
 
-- At least 1 UX spec reviewed in `design/ux/`
-- UX review completed (APPROVED or NEEDS REVISION with documented risks)
-- At least 1 prototype with README
-- Story files exist in `production/epics/[epic-slug]/`
-- At least 1 sprint plan exists
-- At least 1 playtest report exists (Vertical Slice played in 3+ sessions)
+- `design/ux/` 中至少 1 个 UX spec 已 reviewed
+- UX review 已完成（APPROVED，或 NEEDS REVISION 且 documented risks）
+- 至少 1 个带 README 的 prototype
+- `production/epics/[epic-slug]/` 中存在 story files
+- 至少 1 个 sprint plan 存在
+- 至少 1 个 playtest report 存在（Vertical Slice 已进行 3+ sessions）
 
 ---
 
 ## Phase 5: Production
 
-### What Happens in This Phase
+### 本 Phase 会发生什么
 
-This is the core production loop. You work in sprints (typically 1-2 weeks),
-implementing features story by story, tracking progress, and closing stories
-through a structured completion review. This phase repeats until your game
-is content-complete.
+这是核心 production loop。你会以 sprints（通常 1-2 周）为单位工作，逐 story 实现 features、跟踪进度，并通过结构化 completion review 关闭 stories。这个 phase 会重复，直到游戏 content-complete。
 
-### Phase 5 Pipeline (Per Sprint)
+### Phase 5 Pipeline（Per Sprint）
 
 ```
 /sprint-plan new  -->  /story-readiness  -->  implement  -->  /story-done
@@ -760,73 +685,68 @@ is content-complete.
   /retrospective  (at sprint end)
 ```
 
-### Step 5.1: The Story Lifecycle
+### Step 5.1: Story Lifecycle
 
-The production phase centers on the **story lifecycle**:
+Production phase 围绕 **story lifecycle** 展开：
 
 ```
 /story-readiness  -->  implement  -->  /story-done  -->  next story
 ```
 
-**1. Story Readiness:** Before picking up a story, validate it:
+**1. Story Readiness:** pickup 某个 story 前，先验证：
 
 ```
 /story-readiness production/epics/combat/story-combat-damage-calc.md
 ```
 
-This checks design completeness, architecture coverage, ADR status (blocks
-if ADR is still Proposed), control manifest version (warns if stale), and
-scope clarity. Verdict: READY / NEEDS WORK / BLOCKED.
+它检查 design completeness、architecture coverage、ADR status（如果 ADR 仍是 Proposed 则 block）、control manifest version（过期则 warn）和 scope clarity。Verdict: READY / NEEDS WORK / BLOCKED。
 
-**2. Implementation:** Work with the appropriate agents:
+**2. Implementation:** 与合适的 agents 协作：
 
-- `gameplay-programmer` for gameplay systems
-- `engine-programmer` for core engine work
-- `ai-programmer` for AI behavior
-- `network-programmer` for multiplayer
-- `ui-programmer` for UI code
-- `tools-programmer` for dev tools
+- `gameplay-programmer` 负责 gameplay systems
+- `engine-programmer` 负责 core engine work
+- `ai-programmer` 负责 AI behavior
+- `network-programmer` 负责 multiplayer
+- `ui-programmer` 负责 UI code
+- `tools-programmer` 负责 dev tools
 
-All agents follow the collaborative protocol: they read the design doc, ask
-clarifying questions, present architectural options, get your approval, then
-implement.
+所有 agents 都遵循 collaborative protocol：读取 design doc，提出 clarifying questions，展示 architectural options，获得你的 approval，然后 implement。
 
-**3. Story Completion:** When a story is done:
+**3. Story Completion:** story 完成后：
 
 ```
 /story-done production/epics/combat/story-combat-damage-calc.md
 ```
 
-This runs an 8-phase completion review:
-1. Find and read the story file
-2. Load referenced GDD, ADRs, and control manifest
-3. Verify acceptance criteria (auto-checkable, manual, deferred)
-4. Check for GDD/ADR deviations (BLOCKING / ADVISORY / OUT OF SCOPE)
-5. Prompt for code review
-6. Generate completion report (COMPLETE / COMPLETE WITH NOTES / BLOCKED)
-7. Update story `Status: Complete` with completion notes
-8. Surface the next ready story
+它会运行 8-phase completion review：
+1. 找到并读取 story file
+2. 加载 referenced GDD、ADRs 和 control manifest
+3. 验证 acceptance criteria（auto-checkable、manual、deferred）
+4. 检查 GDD/ADR deviations（BLOCKING / ADVISORY / OUT OF SCOPE）
+5. 提示进行 code review
+6. 生成 completion report（COMPLETE / COMPLETE WITH NOTES / BLOCKED）
+7. 将 story `Status: Complete` 与 completion notes 一起更新
+8. 展示下一个 ready story
 
-Tech debt discovered during review is logged to `docs/tech-debt-register.md`.
+review 中发现的 tech debt 会记录到 `docs/tech-debt-register.md`。
 
 ### Step 5.2: Sprint Tracking
 
-Check progress anytime:
+随时检查进度：
 
 ```
 /sprint-status
 ```
 
-Quick 30-line snapshot reading from `production/sprint-status.yaml`.
+它会从 `production/sprint-status.yaml` 读取并输出 30 行 quick snapshot。
 
-If scope is growing:
+如果 scope 正在增长：
 
 ```
 /scope-check production/sprints/sprint-03.md
 ```
 
-This compares current scope against the original plan and flags scope increase,
-recommends cuts.
+它会将当前 scope 与 original plan 比较，标记 scope increase，并建议 cut。
 
 ### Step 5.3: Content Tracking
 
@@ -834,23 +754,21 @@ recommends cuts.
 /content-audit
 ```
 
-Compares GDD-specified content against what has been implemented. Catches
-content gaps early.
+将 GDD-specified content 与已实现内容对比，尽早发现 content gaps。
 
 ### Step 5.4: Design Change Propagation
 
-When a GDD changes after stories have been created:
+当 GDD 在 stories 创建后发生变化：
 
 ```
 /propagate-design-change design/gdd/combat-system.md
 ```
 
-Git-diffs the GDD, finds affected ADRs, generates an impact report, and
-walks you through Superseded/update/keep decisions.
+它会 git-diff 该 GDD，找出受影响 ADRs，生成 impact report，并引导你做 Superseded/update/keep decisions。
 
-### Step 5.5: Multi-System Features (Team Orchestration)
+### Step 5.5: Multi-System Features（Team Orchestration）
 
-For features spanning multiple domains, use team skills:
+对于跨多个 domains 的 features，使用 team skills：
 
 ```
 /team-combat "healing ability with HoT and cleanse"
@@ -860,27 +778,27 @@ For features spanning multiple domains, use team skills:
 /team-audio "combat audio pass"
 ```
 
-Each team skill coordinates a 6-phase collaborative workflow:
-1. **Design** -- game-designer asks questions, presents options
-2. **Architecture** -- lead-programmer proposes code structure
-3. **Parallel Implementation** -- specialists work simultaneously
-4. **Integration** -- gameplay-programmer wires everything together
-5. **Validation** -- qa-tester runs against acceptance criteria
-6. **Report** -- coordinator summarizes status
+每个 team skill 会协调一个 6-phase collaborative workflow：
+1. **Design** -- game-designer 提问并展示 options
+2. **Architecture** -- lead-programmer 提出 code structure
+3. **Parallel Implementation** -- specialists 同时工作
+4. **Integration** -- gameplay-programmer 将所有内容接线整合
+5. **Validation** -- qa-tester 按 acceptance criteria 运行验证
+6. **Report** -- coordinator 总结 status
 
-The orchestration is automated, but **decision points stay with you**.
+orchestration 是自动化的，但**决策点仍由你掌控**。
 
-### Step 5.6: Sprint Review and Next Sprint
+### Step 5.6: Sprint Review 和 Next Sprint
 
-At the end of a sprint:
+sprint 结束时：
 
 ```
 /retrospective
 ```
 
-Analyzes planned vs. completed, velocity, blockers, and actionable improvements.
+分析 planned vs. completed、velocity、blockers 和 actionable improvements。
 
-Then plan the next sprint:
+然后规划下一个 sprint：
 
 ```
 /sprint-plan new
@@ -888,14 +806,13 @@ Then plan the next sprint:
 
 ### Step 5.7: Milestone Reviews
 
-At milestone checkpoints:
+在 milestone checkpoints：
 
 ```
 /milestone-review "alpha"
 ```
 
-Produces feature completeness, quality metrics, risk assessment, and go/no-go
-recommendation.
+生成 feature completeness、quality metrics、risk assessment 和 go/no-go recommendation。
 
 ### Phase 5 Gate
 
@@ -903,21 +820,20 @@ recommendation.
 /gate-check production
 ```
 
-**Requirements to pass:**
+**通过要求：**
 
-- All MVP stories complete
-- Playtesting: 3 sessions covering new player, mid-game, and difficulty curve
+- 所有 MVP stories complete
+- Playtesting：3 个 sessions，覆盖 new player、mid-game 和 difficulty curve
 - Fun hypothesis validated
-- No confusion loops in playtest data
+- playtest data 中没有 confusion loops
 
 ---
 
 ## Phase 6: Polish
 
-### What Happens in This Phase
+### 本 Phase 会发生什么
 
-Your game is feature-complete. Now you make it good. This phase focuses on
-performance, balance, accessibility, audio, visual polish, and playtesting.
+你的游戏已经 feature-complete。现在要把它做好。这个 phase 聚焦 performance、balance、accessibility、audio、visual polish 和 playtesting。
 
 ### Phase 6 Pipeline
 
@@ -943,10 +859,10 @@ performance, balance, accessibility, audio, visual polish, and playtesting.
 /perf-profile
 ```
 
-Guides you through structured performance profiling:
-- Establish targets (FPS, memory, platform)
-- Identify bottlenecks ranked by impact
-- Generate actionable optimization tasks with code locations and expected gains
+引导你完成结构化 performance profiling：
+- 建立 targets（FPS, memory, platform）
+- 按 impact 排序识别 bottlenecks
+- 生成 actionable optimization tasks，包含 code locations 和 expected gains
 
 ### Step 6.2: Balance Analysis
 
@@ -954,8 +870,7 @@ Guides you through structured performance profiling:
 /balance-check assets/data/combat_damage.json
 ```
 
-Analyzes balance data for statistical outliers, broken progression curves,
-degenerate strategies, and economy imbalances.
+分析 balance data 中的 statistical outliers、broken progression curves、degenerate strategies 和 economy imbalances。
 
 ### Step 6.3: Asset Audit
 
@@ -963,16 +878,15 @@ degenerate strategies, and economy imbalances.
 /asset-audit
 ```
 
-Verifies naming conventions, file format standards, and size budgets across
-all assets.
+跨所有 assets 验证 naming conventions、file format standards 和 size budgets。
 
-### Step 6.4: Playtesting (Required: 3 Sessions)
+### Step 6.4: Playtesting（要求 3 Sessions）
 
 ```
 /playtest-report
 ```
 
-Generates structured playtest reports. Three sessions are required, covering:
+生成结构化 playtest reports。需要 3 个 sessions，覆盖：
 - New player experience
 - Mid-game systems
 - Difficulty curve
@@ -983,8 +897,7 @@ Generates structured playtest reports. Three sessions are required, covering:
 /tech-debt
 ```
 
-Scans for TODO/FIXME/HACK comments, code duplication, overly complex functions,
-missing tests, and outdated dependencies. Each item categorized and prioritized.
+扫描 TODO/FIXME/HACK comments、code duplication、过度复杂的 functions、missing tests 和 outdated dependencies。每个 item 都会分类并排序优先级。
 
 ### Step 6.6: Coordinated Polish Pass
 
@@ -992,25 +905,23 @@ missing tests, and outdated dependencies. Each item categorized and prioritized.
 /team-polish "combat system"
 ```
 
-Coordinates 4 specialists in parallel:
-1. Performance optimization (performance-analyst)
-2. Visual polish (technical-artist)
-3. Audio polish (sound-designer)
-4. Feel/juice (gameplay-programmer + technical-artist)
+并行协调 4 个 specialists：
+1. Performance optimization（performance-analyst）
+2. Visual polish（technical-artist）
+3. Audio polish（sound-designer）
+4. Feel/juice（gameplay-programmer + technical-artist）
 
-You set priorities; the team executes with your approval at each step.
+你设定 priorities；team 在每一步获得你的 approval 后执行。
 
-### Step 6.7: Localization and Accessibility
+### Step 6.7: Localization 和 Accessibility
 
 ```
 /localize src/
 ```
 
-Scans for hardcoded strings, concatenation that breaks translation, text that
-does not account for expansion, and missing locale files.
+扫描 hardcoded strings、会破坏 translation 的 concatenation、未考虑 expansion 的 text，以及 missing locale files。
 
-Accessibility is audited against the tier committed in Phase 3's accessibility
-requirements document.
+Accessibility 会按 Phase 3 accessibility requirements document 中承诺的 tier 进行 audit。
 
 ### Phase 6 Gate
 
@@ -1018,20 +929,20 @@ requirements document.
 /gate-check polish
 ```
 
-**Requirements to pass:**
+**通过要求：**
 
-- At least 3 playtest reports exist
-- Coordinated polish pass completed (`/team-polish`)
-- No blocking performance issues
-- Accessibility tier requirements met
+- 至少 3 个 playtest reports 存在
+- Coordinated polish pass 已完成（`/team-polish`）
+- 没有 blocking performance issues
+- Accessibility tier requirements 已满足
 
 ---
 
 ## Phase 7: Release
 
-### What Happens in This Phase
+### 本 Phase 会发生什么
 
-Your game is polished, tested, and ready. Now you ship it.
+你的游戏已经 polished、tested 并 ready。现在发布它。
 
 ### Phase 7 Pipeline
 
@@ -1052,24 +963,24 @@ Your game is polished, tested, and ready. Now you ship it.
 /release-checklist v1.0.0
 ```
 
-Generates a comprehensive pre-release checklist covering:
-- Build verification (all platforms compile and run)
-- Certification requirements (platform-specific)
-- Store metadata (descriptions, screenshots, trailers)
-- Legal compliance (EULA, privacy policy, ratings)
+生成全面的 pre-release checklist，覆盖：
+- Build verification（所有 platforms 都能 compile 并 run）
+- Certification requirements（platform-specific）
+- Store metadata（descriptions, screenshots, trailers）
+- Legal compliance（EULA, privacy policy, ratings）
 - Save game compatibility
 - Analytics verification
 
-### Step 7.2: Launch Readiness (Full Validation)
+### Step 7.2: Launch Readiness（Full Validation）
 
 ```
 /launch-checklist
 ```
 
-Complete cross-department validation:
+完整 cross-department validation：
 
-| Department | What Is Checked |
-|-----------|---------------|
+| Department | 检查内容 |
+|-----------|----------|
 | **Engineering** | Build stability, crash rates, memory leaks, load times |
 | **Design** | Feature completeness, tutorial flow, difficulty curve |
 | **Art** | Asset quality, missing textures, LOD levels |
@@ -1084,22 +995,21 @@ Complete cross-department validation:
 | **Infrastructure** | Servers scaled, CDN configured, monitoring active |
 | **Legal** | EULA finalized, privacy policy, COPPA/GDPR compliance |
 
-Each item gets a **Go / No-Go** status. All must be Go to ship.
+每个 item 都会得到 **Go / No-Go** status。全部为 Go 才能发布。
 
-### Step 7.3: Generate Player-Facing Content
+### Step 7.3: 生成 Player-Facing Content
 
 ```
 /patch-notes v1.0.0
 ```
 
-Generates player-friendly patch notes from git history and sprint data.
-Translates developer language into player language.
+从 git history 和 sprint data 生成 player-friendly patch notes，将 developer language 转换为 player language。
 
 ```
 /changelog v1.0.0
 ```
 
-Generates an internal changelog (more technical, for the team).
+生成 internal changelog（更 technical，供团队使用）。
 
 ### Step 7.4: Coordinate the Release
 
@@ -1107,7 +1017,7 @@ Generates an internal changelog (more technical, for the team).
 /team-release
 ```
 
-Coordinates release-manager, QA, and DevOps through:
+协调 release-manager、QA 和 DevOps 完成：
 1. Pre-release validation
 2. Build management
 3. Final QA sign-off
@@ -1116,8 +1026,7 @@ Coordinates release-manager, QA, and DevOps through:
 
 ### Step 7.5: Ship
 
-The `validate-push` hook will warn you when pushing to `main` or `develop`.
-This is intentional -- release pushes should be deliberate:
+当 push 到 `main` 或 `develop` 时，`validate-push` hook 会 warn。这是刻意设计的，release pushes 应该是慎重行为：
 
 ```bash
 git tag v1.0.0
@@ -1126,19 +1035,19 @@ git push origin main --tags
 
 ### Step 7.6: Post-Launch
 
-**Hotfix workflow** for critical production bugs:
+critical production bugs 使用 **Hotfix workflow**：
 
 ```
 /hotfix "Players losing save data when inventory exceeds 99 items"
 ```
 
-Bypasses normal sprint processes with a full audit trail:
-1. Creates a hotfix branch
-2. Implements the fix
-3. Ensures backport to development branch
-4. Documents the incident
+它会跳过正常 sprint processes，但保留完整 audit trail：
+1. 创建 hotfix branch
+2. 实现 fix
+3. 确保 backport 到 development branch
+4. 记录 incident
 
-**Post-mortem** after launch stabilizes:
+launch 稳定后做 **Post-mortem**：
 
 ```
 Ask Claude to create a post-mortem using the template at
@@ -1149,61 +1058,54 @@ Ask Claude to create a post-mortem using the template at
 
 ## Cross-Cutting Concerns
 
-These topics apply across all phases.
+这些 topics 适用于所有 phases。
 
 ### Director Review Modes
 
-Director gates are specialist agents that review your work at key workflow steps.
-By default they run at every checkpoint. You can control how much review you get.
+Director gates 是 specialist agents，会在关键 workflow steps review 你的工作。默认会在每个 checkpoint 运行。你可以控制 review 强度。
 
-**Set your review intensity once during `/start`.** Saved to `production/review-mode.txt`.
+**在 `/start` 期间设置一次 review intensity。** 保存到 `production/review-mode.txt`。
 
-| Mode | What runs | Best for |
-|------|-----------|----------|
-| `full` | All director gates at every step | New projects, learning the system |
-| `lean` | Directors only at phase transitions (`/gate-check`) | Experienced devs |
-| `solo` | No director reviews | Game jams, prototypes, maximum speed |
+| Mode | 运行内容 | 最适合 |
+|------|----------|--------|
+| `full` | 每一步都运行所有 director gates | New projects，学习系统 |
+| `lean` | 只在 phase transitions（`/gate-check`）运行 directors | Experienced devs |
+| `solo` | 不运行 director reviews | Game jams、prototypes、maximum speed |
 
-**Override for a single run** without changing your global setting:
+**单次运行 override**，不改变 global setting：
 
 ```
 /brainstorm space horror --review full
 /architecture-decision --review solo
 ```
 
-The `--review` flag works on all gate-using skills. Change the global mode at any
-time by editing `production/review-mode.txt` directly or re-running `/start`.
+`--review` flag 适用于所有使用 gate 的 skills。可以随时直接编辑 `production/review-mode.txt`，或重新运行 `/start` 来改变 global mode。
 
-Full gate definitions and check pattern: `.claude/docs/director-gates.md`
+完整 gate definitions 和 check pattern：`.claude/docs/director-gates.md`
 
 ---
 
-### The Collaboration Protocol
+### Collaboration Protocol
 
-This system is **user-driven collaborative**, not autonomous.
+这个 system 是**用户驱动的协作式**，不是 autonomous。
 
 **Pattern:** Question > Options > Decision > Draft > Approval
 
-Every agent interaction follows this pattern:
-1. Agent asks clarifying questions
-2. Agent presents 2-4 options with trade-offs and reasoning
-3. You decide
-4. Agent drafts based on your decision
-5. You review and refine
-6. Agent asks "May I write this to [filepath]?" before writing
+每次 agent interaction 都遵循：
+1. Agent 提出 clarifying questions
+2. Agent 展示 2-4 个 options，附 trade-offs 和 reasoning
+3. 你做 decision
+4. Agent 基于你的 decision 起草
+5. 你 review 并 refine
+6. 写入前，Agent 询问 "May I write this to [filepath]?"
 
-See `docs/COLLABORATIVE-DESIGN-PRINCIPLE.md` for the full protocol with
-examples.
+完整 protocol 和 examples 见 `docs/COLLABORATIVE-DESIGN-PRINCIPLE.md`。
 
-### The AskUserQuestion Tool
+### AskUserQuestion Tool
 
-Agents use the `AskUserQuestion` tool for structured option presentation.
-The pattern is Explain then Capture: full analysis in conversation text first,
-then a clean UI picker for the decision. Use it for design choices,
-architecture decisions, and strategic questions. Do not use it for open-ended
-discovery questions or simple yes/no confirmations.
+Agents 使用 `AskUserQuestion` tool 进行结构化 option presentation。pattern 是 Explain then Capture：先在 conversation text 中给出完整 analysis，再用干净的 UI picker 收集 decision。用于 design choices、architecture decisions 和 strategic questions。不要用于 open-ended discovery questions 或简单 yes/no confirmations。
 
-### Agent Coordination (3-Tier Hierarchy)
+### Agent Coordination（3-Tier Hierarchy）
 
 ```
 Tier 1 (Directors):    creative-director, technical-director, producer
@@ -1231,62 +1133,49 @@ Tier 3 (Specialists):  gameplay-programmer, engine-programmer,
 ```
 
 **Coordination rules:**
-- Vertical delegation: Directors > Leads > Specialists. Never skip tiers for
-  complex decisions.
-- Horizontal consultation: Agents at the same tier may consult each other but
-  must not make binding decisions outside their domain.
-- Conflict resolution: Design conflicts go to `creative-director`. Technical
-  conflicts go to `technical-director`. Scope conflicts go to `producer`.
-- No unilateral cross-domain changes.
+- Vertical delegation：Directors > Leads > Specialists。复杂 decisions 不要跳过层级。
+- Horizontal consultation：同 tier agents 可以互相 consult，但不得在自己 domain 之外做 binding decisions。
+- Conflict resolution：Design conflicts 交给 `creative-director`。Technical conflicts 交给 `technical-director`。Scope conflicts 交给 `producer`。
+- 不允许 unilateral cross-domain changes。
 
-### Automated Hooks (Safety Net)
+### Automated Hooks（Safety Net）
 
-The system has 12 hooks that run automatically:
+system 有 12 个自动运行的 hooks：
 
-| Hook | Trigger | What It Does |
-|------|---------|-------------|
-| `session-start.sh` | Session start | Shows branch, recent commits, detects active.md for recovery |
-| `detect-gaps.sh` | Session start | Detects fresh projects (no engine, no concept) and suggests `/start` |
-| `pre-compact.sh` | Before compaction | Dumps session state into conversation for auto-recovery |
-| `post-compact.sh` | After compaction | Reminds Claude to restore session state from `active.md` |
-| `notify.sh` | Notification event | Shows Windows toast notification via PowerShell |
-| `validate-commit.sh` | Before commit | Checks for design doc references, valid JSON, no hardcoded values |
-| `validate-push.sh` | Before push | Warns on pushes to main/develop |
-| `validate-assets.sh` | Before commit | Checks asset naming and size |
-| `validate-skill-change.sh` | Skill file written | Advises running `/skill-test` after `.claude/skills/` changes |
-| `log-agent.sh` | Agent start | Logs agent invocations for audit trail |
-| `log-agent-stop.sh` | Agent stop | Completes agent audit trail (start + stop) |
-| `session-stop.sh` | Session end | Final session logging |
+| Hook | Trigger | 作用 |
+|------|---------|------|
+| `session-start.sh` | Session start | 显示 branch、recent commits，并检测 active.md 以便 recovery |
+| `detect-gaps.sh` | Session start | 检测 fresh projects（no engine, no concept）并建议 `/start` |
+| `pre-compact.sh` | Before compaction | 将 session state dump 到 conversation，用于 auto-recovery |
+| `post-compact.sh` | After compaction | 提醒 Claude 从 `active.md` restore session state |
+| `notify.sh` | Notification event | 通过 PowerShell 显示 Windows toast notification |
+| `validate-commit.sh` | Before commit | 检查 design doc references、valid JSON、no hardcoded values |
+| `validate-push.sh` | Before push | 对 push 到 main/develop 发出 warning |
+| `validate-assets.sh` | Before commit | 检查 asset naming 和 size |
+| `validate-skill-change.sh` | Skill file written | `.claude/skills/` 变更后建议运行 `/skill-test` |
+| `log-agent.sh` | Agent start | 记录 agent invocations，用于 audit trail |
+| `log-agent-stop.sh` | Agent stop | 完成 agent audit trail（start + stop） |
+| `session-stop.sh` | Session end | 最终 session logging |
 
 ### Context Resilience
 
-**Session state file:** `production/session-state/active.md` is a living
-checkpoint. Update it after each significant milestone. After any disruption
-(compaction, crash, `/clear`), read this file first.
+**Session state file:** `production/session-state/active.md` 是 living checkpoint。每个重要 milestone 后更新它。任何 disruption（compaction、crash、`/clear`）后，先读取这个文件。
 
-**Incremental writing:** When creating multi-section documents, write each
-section to file immediately after approval. This means completed sections
-survive crashes and context compactions. Previous discussion about written
-sections can be safely compacted.
+**Incremental writing:** 创建 multi-section documents 时，每个 section 在 approval 后立即写入文件。这意味着已完成 sections 能在 crashes 和 context compactions 后保留。关于已写入 sections 的先前讨论可以安全 compact。
 
-**Automatic recovery:** The `session-start.sh` hook detects and previews
-`active.md` automatically. The `pre-compact.sh` hook dumps state into the
-conversation before compaction.
+**Automatic recovery:** `session-start.sh` hook 会自动检测并 preview `active.md`。`pre-compact.sh` hook 会在 compaction 前将 state dump 到 conversation。
 
-**Sprint status tracking:** `production/sprint-status.yaml` is the
-machine-readable story tracker. Written by `/sprint-plan` (init) and
-`/story-done` (status updates). Read by `/sprint-status`, `/help`, and
-`/story-done` (next story). Eliminates fragile markdown scanning.
+**Sprint status tracking:** `production/sprint-status.yaml` 是 machine-readable story tracker。由 `/sprint-plan`（init）和 `/story-done`（status updates）写入。由 `/sprint-status`、`/help` 和 `/story-done`（next story）读取。它消除了脆弱的 markdown scanning。
 
 ### Brownfield Adoption
 
-For existing projects that already have some artifacts:
+对于已经有一些 artifacts 的 existing projects：
 
 ```
 /adopt
 ```
 
-Or targeted:
+或 targeted：
 
 ```
 /adopt gdds
@@ -1295,23 +1184,20 @@ Or targeted:
 /adopt infra
 ```
 
-This audits existing artifacts for **format** (not existence), classifies gaps
-as BLOCKING/HIGH/MEDIUM/LOW, builds an ordered migration plan, and writes
-`docs/adoption-plan-[date].md`. Core principle: MIGRATION not REPLACEMENT --
-it never regenerates existing work, only fills gaps.
+它会审计 existing artifacts 的 **format**（不是 existence），将 gaps 分类为 BLOCKING/HIGH/MEDIUM/LOW，构建有序 migration plan，并写入 `docs/adoption-plan-[date].md`。核心原则：MIGRATION not REPLACEMENT；它永远不会重新生成现有工作，只填补 gaps。
 
-Individual skills also support retrofit mode:
+各个 skills 也支持 retrofit mode：
 
 ```
 /design-system retrofit design/gdd/combat-system.md
 /architecture-decision retrofit docs/architecture/adr-005.md
 ```
 
-These detect which sections are present vs. missing and fill only the gaps.
+它们会检测哪些 sections 已存在、哪些缺失，并只填补 gaps。
 
 ### Gate System
 
-Phase gates are formal checkpoints. Run `/gate-check` with the transition name:
+Phase gates 是正式 checkpoints。使用 transition name 运行 `/gate-check`：
 
 ```
 /gate-check concept              # Concept -> Systems Design
@@ -1323,66 +1209,65 @@ Phase gates are formal checkpoints. Run `/gate-check` with the transition name:
 ```
 
 **Verdicts:**
-- **PASS** -- all requirements met, advance to next phase
-- **CONCERNS** -- requirements met with acknowledged risks, passable
-- **FAIL** -- requirements not met, blocks advancement with specific remediation
+- **PASS** -- 所有 requirements met，进入下一 phase
+- **CONCERNS** -- requirements met 但有 acknowledged risks，可以通过
+- **FAIL** -- requirements not met，会用具体 remediation 阻止进入下一阶段
 
-When a gate passes, `production/stage.txt` is updated (only then), which
-controls the status line and `/help` behavior.
+gate 通过时，`production/stage.txt` 才会更新，这会控制 status line 和 `/help` behavior。
 
 ### Reverse Documentation
 
-For code that exists without design docs (common after brownfield adoption):
+对于没有 design docs 的现有 code（brownfield adoption 后常见）：
 
 ```
 /reverse-document src/gameplay/combat/
 ```
 
-Reads existing code and generates GDD-format design documentation from it.
+读取 existing code，并从中生成 GDD-format design documentation。
 
 ---
 
 ## Appendix A: Agent Quick-Reference
 
-### "I need to do X -- which agent do I use?"
+### “我需要做 X，应该用哪个 agent？”
 
-| I need to... | Agent | Tier |
-|-------------|-------|------|
-| Come up with a game idea | `/brainstorm` skill | -- |
-| Design a game mechanic | `game-designer` | 2 |
-| Design specific formulas/numbers | `systems-designer` | 3 |
-| Design a game level | `level-designer` | 3 |
-| Design loot tables / economy | `economy-designer` | 3 |
-| Build world lore | `world-builder` | 3 |
-| Write dialogue | `writer` | 3 |
-| Plan the story | `narrative-director` | 2 |
-| Plan a sprint | `producer` | 1 |
-| Make a creative decision | `creative-director` | 1 |
-| Make a technical decision | `technical-director` | 1 |
-| Implement gameplay code | `gameplay-programmer` | 3 |
-| Implement core engine systems | `engine-programmer` | 3 |
-| Implement AI behavior | `ai-programmer` | 3 |
-| Implement multiplayer | `network-programmer` | 3 |
-| Implement UI | `ui-programmer` | 3 |
-| Build dev tools | `tools-programmer` | 3 |
+| 我需要... | Agent | Tier |
+|-----------|-------|------|
+| 想出一个 game idea | `/brainstorm` skill | -- |
+| 设计 game mechanic | `game-designer` | 2 |
+| 设计具体 formulas/numbers | `systems-designer` | 3 |
+| 设计 game level | `level-designer` | 3 |
+| 设计 loot tables / economy | `economy-designer` | 3 |
+| 构建 world lore | `world-builder` | 3 |
+| 编写 dialogue | `writer` | 3 |
+| 规划 story | `narrative-director` | 2 |
+| 规划 sprint | `producer` | 1 |
+| 做 creative decision | `creative-director` | 1 |
+| 做 technical decision | `technical-director` | 1 |
+| 实现 gameplay code | `gameplay-programmer` | 3 |
+| 实现 core engine systems | `engine-programmer` | 3 |
+| 实现 AI behavior | `ai-programmer` | 3 |
+| 实现 multiplayer | `network-programmer` | 3 |
+| 实现 UI | `ui-programmer` | 3 |
+| 构建 dev tools | `tools-programmer` | 3 |
 | Review code architecture | `lead-programmer` | 2 |
-| Create shaders / VFX | `technical-artist` | 3 |
-| Define visual style | `art-director` | 2 |
-| Define audio style | `audio-director` | 2 |
-| Design sound effects | `sound-designer` | 3 |
-| Design UX flows | `ux-designer` | 3 |
-| Write test cases | `qa-tester` | 3 |
-| Plan test strategy | `qa-lead` | 2 |
+| 创建 shaders / VFX | `technical-artist` | 3 |
+| 定义 visual style | `art-director` | 2 |
+| 定义 audio style | `audio-director` | 2 |
+| 设计 sound effects | `sound-designer` | 3 |
+| 设计 UX flows | `ux-designer` | 3 |
+| 编写 test cases | `qa-tester` | 3 |
+| 规划 test strategy | `qa-lead` | 2 |
 | Profile performance | `performance-analyst` | 3 |
-| Set up CI/CD | `devops-engineer` | 3 |
-| Design analytics | `analytics-engineer` | 3 |
-| Check accessibility | `accessibility-specialist` | 3 |
-| Plan live operations | `live-ops-designer` | 3 |
-| Manage a release | `release-manager` | 2 |
-| Manage localization | `localization-lead` | 2 |
-| Prototype quickly | `prototyper` | 3 |
+| 设置 CI/CD | `devops-engineer` | 3 |
+| 设计 analytics | `analytics-engineer` | 3 |
+| 检查 accessibility | `accessibility-specialist` | 3 |
+| 规划 live operations | `live-ops-designer` | 3 |
+| 管理 release | `release-manager` | 2 |
+| 管理 localization | `localization-lead` | 2 |
+| 快速 prototype | `prototyper` | 3 |
 | Audit security | `security-engineer` | 3 |
-| Communicate with players | `community-manager` | 3 |
+| 与 players 沟通 | `community-manager` | 3 |
 | Godot-specific help | `godot-specialist` | 3 |
 | GDScript-specific help | `godot-gdscript-specialist` | 3 |
 | Godot shader help | `godot-shader-specialist` | 3 |
@@ -1414,290 +1299,268 @@ Reads existing code and generates GDD-format design documentation from it.
                    ui, tools)
 ```
 
-**Escalation rule:** If two agents disagree, go up. Design conflicts go to
-`creative-director`. Technical conflicts go to `technical-director`. Scope
-conflicts go to `producer`.
+**Escalation rule:** 如果两个 agents 意见不一致，向上升级。Design conflicts 交给 `creative-director`。Technical conflicts 交给 `technical-director`。Scope conflicts 交给 `producer`。
 
 ---
 
 ## Appendix B: Slash Command Quick-Reference
 
-### All 73 Commands by Category
+### 按 Category 列出的全部 73 个 Commands
 
-#### Onboarding and Navigation (6)
-
-| Command | Purpose | Phase |
-|---------|---------|-------|
-| `/start` | Guided onboarding, routes to right workflow | Any (first session) |
-| `/help` | Context-aware "what do I do next?" | Any |
-| `/project-stage-detect` | Full project audit to determine current phase | Any |
-| `/setup-engine` | Configure engine, pin version, set preferences | 1 |
-| `/adopt` | Brownfield audit and migration plan | Any (existing projects) |
-| `/skill-improve` | Improve a skill via test-fix-retest loop | Any |
-
-#### Game Design (6)
+#### Onboarding and Navigation（6）
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
-| `/brainstorm` | Collaborative ideation with MDA analysis | 1 |
-| `/map-systems` | Decompose concept into systems index | 1-2 |
+| `/start` | Guided onboarding，路由到正确 workflow | Any（first session） |
+| `/help` | Context-aware “下一步做什么？” | Any |
+| `/project-stage-detect` | 完整 project audit，用于确定 current phase | Any |
+| `/setup-engine` | 配置 engine、pin version、设置 preferences | 1 |
+| `/adopt` | Brownfield audit 和 migration plan | Any（existing projects） |
+| `/skill-improve` | 通过 test-fix-retest loop 改进 skill | Any |
+
+#### Game Design（6）
+
+| Command | Purpose | Phase |
+|---------|---------|-------|
+| `/brainstorm` | 带 MDA analysis 的 collaborative ideation | 1 |
+| `/map-systems` | 将 concept 拆解为 systems index | 1-2 |
 | `/design-system` | Guided section-by-section GDD authoring | 2 |
-| `/quick-design` | Lightweight spec for small changes | 2+ |
-| `/review-all-gdds` | Cross-GDD consistency and design theory review | 2 |
-| `/propagate-design-change` | Find ADRs/stories affected by GDD changes | 5 |
+| `/quick-design` | 小改动的 lightweight spec | 2+ |
+| `/review-all-gdds` | Cross-GDD consistency 和 design theory review | 2 |
+| `/propagate-design-change` | 查找受 GDD changes 影响的 ADRs/stories | 5 |
 
-#### UX and Interface (2)
+#### UX and Interface（2）
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
-| `/ux-design` | Author UX specs (screen/flow, HUD, patterns) | 4 |
-| `/ux-review` | Validate UX specs for accessibility and GDD alignment | 4 |
+| `/ux-design` | 编写 UX specs（screen/flow, HUD, patterns） | 4 |
+| `/ux-review` | 验证 UX specs 的 accessibility 和 GDD alignment | 4 |
 
-#### Architecture (4)
+#### Architecture（4）
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
 | `/create-architecture` | Master architecture document | 3 |
-| `/architecture-decision` | Create or retrofit an ADR | 3 |
-| `/architecture-review` | Validate all ADRs, dependency ordering | 3 |
-| `/create-control-manifest` | Flat programmer rules from Accepted ADRs | 3 |
+| `/architecture-decision` | 创建或 retrofit 一个 ADR | 3 |
+| `/architecture-review` | 验证所有 ADRs 和 dependency ordering | 3 |
+| `/create-control-manifest` | 从 Accepted ADRs 生成 flat programmer rules | 3 |
 
-#### Stories and Sprints (8)
+#### Stories and Sprints（8）
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
-| `/create-epics` | Translate GDDs + ADRs into epics (one per module) | 4 |
-| `/create-stories` | Break a single epic into story files | 4 |
-| `/dev-story` | Implement a story — routes to the correct programmer agent | 5 |
-| `/sprint-plan` | Create or manage sprint plans | 4-5 |
-| `/sprint-status` | Quick 30-line sprint snapshot | 5 |
-| `/story-readiness` | Validate story is implementation-ready | 4-5 |
+| `/create-epics` | 将 GDDs + ADRs 转换为 epics（每个 module 一个） | 4 |
+| `/create-stories` | 将单个 epic 拆成 story files | 4 |
+| `/dev-story` | 实现 story，并路由到正确 programmer agent | 5 |
+| `/sprint-plan` | 创建或管理 sprint plans | 4-5 |
+| `/sprint-status` | 30 行 quick sprint snapshot | 5 |
+| `/story-readiness` | 验证 story 已可实现 | 4-5 |
 | `/story-done` | 8-phase story completion review | 5 |
-| `/estimate` | Effort estimation with risk assessment | 4-5 |
+| `/estimate` | 带 risk assessment 的 effort estimation | 4-5 |
 
-#### Reviews and Analysis (13)
+#### Reviews and Analysis（13）
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
-| `/design-review` | Validate GDD against 8-section standard | 1-2 |
+| `/design-review` | 按 8-section standard 验证 GDD | 1-2 |
 | `/code-review` | Architectural code review | 5+ |
 | `/balance-check` | Game balance formula analysis | 5-6 |
-| `/asset-audit` | Asset naming, format, size verification | 6 |
-| `/asset-spec` | Per-asset visual specs and AI generation prompts | 5-6 |
+| `/asset-audit` | Asset naming、format、size verification | 6 |
+| `/asset-spec` | Per-asset visual specs 和 AI generation prompts | 5-6 |
 | `/content-audit` | GDD-specified content vs. implemented | 5 |
-| `/consistency-check` | Cross-GDD entity and formula inconsistency scan | 2+ |
+| `/consistency-check` | Cross-GDD entity 和 formula inconsistency scan | 2+ |
 | `/scope-check` | Scope creep detection | 5 |
 | `/perf-profile` | Performance profiling workflow | 6 |
-| `/tech-debt` | Tech debt scanning and prioritization | 6 |
-| `/gate-check` | Formal phase gate with PASS/CONCERNS/FAIL | All transitions |
-| `/reverse-document` | Generate design docs from existing code | Any |
-| `/security-audit` | Security vulnerability audit (save, network, input) | 6-7 |
+| `/tech-debt` | Tech debt scanning 和 prioritization | 6 |
+| `/gate-check` | 带 PASS/CONCERNS/FAIL 的 formal phase gate | All transitions |
+| `/reverse-document` | 从 existing code 生成 design docs | Any |
+| `/security-audit` | Security vulnerability audit（save, network, input） | 6-7 |
 
-#### QA and Testing (9)
-
-| Command | Purpose | Phase |
-|---------|---------|-------|
-| `/qa-plan` | Generate QA test plan for a sprint or feature | 5 |
-| `/smoke-check` | Critical path smoke test gate before QA hand-off | 5-6 |
-| `/soak-test` | Soak test protocol for extended play sessions | 6 |
-| `/regression-suite` | Map test coverage, identify fixed bugs lacking regression tests | 5-6 |
-| `/test-setup` | Scaffold test framework and CI/CD pipeline | 4 |
-| `/test-helpers` | Generate engine-specific test helper libraries | 4-5 |
-| `/test-evidence-review` | Quality review of test files and manual evidence | 5 |
-| `/test-flakiness` | Detect non-deterministic tests from CI logs | 5-6 |
-| `/skill-test` | Validate skill files for structural and behavioral correctness | Any |
-
-#### Production Management (6)
+#### QA and Testing（9）
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
-| `/milestone-review` | Milestone progress and go/no-go | 5 |
+| `/qa-plan` | 为 sprint 或 feature 生成 QA test plan | 5 |
+| `/smoke-check` | QA hand-off 前的 critical path smoke test gate | 5-6 |
+| `/soak-test` | Extended play sessions 的 soak test protocol | 6 |
+| `/regression-suite` | 映射 test coverage，找出缺少 regression tests 的 fixed bugs | 5-6 |
+| `/test-setup` | Scaffold test framework 和 CI/CD pipeline | 4 |
+| `/test-helpers` | 生成 engine-specific test helper libraries | 4-5 |
+| `/test-evidence-review` | Test files 和 manual evidence 的 quality review | 5 |
+| `/test-flakiness` | 从 CI logs 检测 non-deterministic tests | 5-6 |
+| `/skill-test` | 验证 skill files 的 structural 和 behavioral correctness | Any |
+
+#### Production Management（6）
+
+| Command | Purpose | Phase |
+|---------|---------|-------|
+| `/milestone-review` | Milestone progress 和 go/no-go | 5 |
 | `/retrospective` | Sprint retrospective analysis | 5 |
-| `/bug-report` | Structured bug report creation | 5+ |
-| `/bug-triage` | Re-evaluate open bugs for priority, severity, and owner | 5+ |
+| `/bug-report` | 创建 structured bug report | 5+ |
+| `/bug-triage` | 重新评估 open bugs 的 priority、severity 和 owner | 5+ |
 | `/playtest-report` | Structured playtest session report | 4-6 |
-| `/onboard` | Onboard a new team member | Any |
+| `/onboard` | Onboard 新 team member | Any |
 
-#### Release (6)
+#### Release（6）
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
 | `/release-checklist` | Pre-release validation | 7 |
-| `/launch-checklist` | Full cross-department launch readiness | 7 |
+| `/launch-checklist` | 完整 cross-department launch readiness | 7 |
 | `/changelog` | Auto-generate internal changelog | 7 |
 | `/patch-notes` | Player-facing patch notes | 7 |
 | `/hotfix` | Emergency fix workflow | 7+ |
-| `/day-one-patch` | Scoped patch for issues found after gold master | 7+ |
+| `/day-one-patch` | 针对 gold master 后发现问题的 scoped patch | 7+ |
 
-#### Creative (4)
-
-| Command | Purpose | Phase |
-|---------|---------|-------|
-| `/prototype` | Concept prototype — validate core idea before GDDs | 1 |
-| `/art-bible` | Guided Art Bible authoring — visual identity spec | 1-2 |
-| `/vertical-slice` | Production-quality end-to-end build before Production | 4 |
-| `/localize` | String extraction and validation | 6-7 |
-
-#### Team Orchestration (9)
+#### Creative（4）
 
 | Command | Purpose | Phase |
 |---------|---------|-------|
-| `/team-combat` | Combat feature: design through implementation | 5 |
-| `/team-narrative` | Narrative content: structure through dialogue | 5 |
-| `/team-ui` | UI feature: UX spec through polished implementation | 5 |
-| `/team-level` | Level: layout through dressed encounters | 5 |
-| `/team-audio` | Audio: direction through implemented events | 5-6 |
-| `/team-polish` | Coordinated polish: perf + art + audio + QA | 6 |
-| `/team-release` | Release coordination: build + QA + deployment | 7 |
-| `/team-live-ops` | Live-ops planning: seasonal events, battle pass, retention | 7+ |
-| `/team-qa` | Full QA cycle: strategy, execution, coverage, sign-off | 6-7 |
+| `/prototype` | Concept prototype，GDDs 前验证 core idea | 1 |
+| `/art-bible` | Guided Art Bible authoring，visual identity spec | 1-2 |
+| `/vertical-slice` | Production 前的 production-quality end-to-end build | 4 |
+| `/localize` | String extraction 和 validation | 6-7 |
+
+#### Team Orchestration（9）
+
+| Command | Purpose | Phase |
+|---------|---------|-------|
+| `/team-combat` | Combat feature：从 design 到 implementation | 5 |
+| `/team-narrative` | Narrative content：从 structure 到 dialogue | 5 |
+| `/team-ui` | UI feature：从 UX spec 到 polished implementation | 5 |
+| `/team-level` | Level：从 layout 到 dressed encounters | 5 |
+| `/team-audio` | Audio：从 direction 到 implemented events | 5-6 |
+| `/team-polish` | Coordinated polish：perf + art + audio + QA | 6 |
+| `/team-release` | Release coordination：build + QA + deployment | 7 |
+| `/team-live-ops` | Live-ops planning：seasonal events、battle pass、retention | 7+ |
+| `/team-qa` | Full QA cycle：strategy、execution、coverage、sign-off | 6-7 |
 
 ---
 
 ## Appendix C: Common Workflows
 
-### Workflow 1: "I just started and have no game idea"
+### Workflow 1: “刚开始，没有 game idea”
 
 ```
-1. /start (routes you based on where you are)
-2. /brainstorm (collaborative ideation, pick a concept)
-3. /setup-engine (pin engine and version)
-4. /design-review on concept doc (optional, recommended)
-5. /map-systems (decompose concept into systems with deps and priorities)
-6. /gate-check concept (verify you're ready for Systems Design)
-7. /design-system per system (guided GDD authoring)
+1. /start（根据你当前状态路由）
+2. /brainstorm（collaborative ideation，选择一个 concept）
+3. /setup-engine（pin engine 和 version）
+4. 对 concept doc 运行 /design-review（可选，推荐）
+5. /map-systems（将 concept 拆解为带 deps 和 priorities 的 systems）
+6. /gate-check concept（验证你已准备进入 Systems Design）
+7. 对每个 system 运行 /design-system（guided GDD authoring）
 ```
 
-### Workflow 2: "I have designs and want to start coding"
+### Workflow 2: “已有 designs，想开始 coding”
 
 ```
-1. /design-review on each GDD (make sure they're solid)
-2. /review-all-gdds (cross-GDD consistency)
+1. 对每个 GDD 运行 /design-review（确认足够稳固）
+2. /review-all-gdds（Cross-GDD consistency）
 3. /gate-check systems-design
-4. /create-architecture + /architecture-decision (per major decision)
+4. /create-architecture + /architecture-decision（每个 major decision 一次）
 5. /architecture-review
 6. /create-control-manifest
 7. /gate-check technical-setup
-8. /create-epics layer: foundation + /create-stories [slug] (define epics, break into stories)
+8. /create-epics layer: foundation + /create-stories [slug]（定义 epics，拆成 stories）
 9. /sprint-plan new
-10. /story-readiness -> implement -> /story-done (story lifecycle)
+10. /story-readiness -> implement -> /story-done（story lifecycle）
 ```
 
-### Workflow 3: "I need to add a complex feature mid-production"
+### Workflow 3: “Production 中途需要添加复杂 feature”
 
 ```
-1. /design-system or /quick-design (depending on scope)
-2. /design-review to validate
-3. /propagate-design-change if modifying existing GDDs
-4. /estimate for effort and risk
-5. /team-combat, /team-narrative, /team-ui, etc. (appropriate team skill)
-6. /story-done when complete
-7. /balance-check if it affects game balance
+1. /design-system 或 /quick-design（取决于 scope）
+2. /design-review 进行验证
+3. 如果修改 existing GDDs，运行 /propagate-design-change
+4. /estimate 评估 effort 和 risk
+5. /team-combat、/team-narrative、/team-ui 等（合适的 team skill）
+6. 完成后运行 /story-done
+7. 如果影响 game balance，运行 /balance-check
 ```
 
-### Workflow 4: "Something broke in production"
+### Workflow 4: “Production 中出问题了”
 
 ```
 1. /hotfix "description of the issue"
-2. Fix is implemented on hotfix branch
-3. /code-review the fix
-4. Run tests
-5. /release-checklist for hotfix build
-6. Deploy and backport
+2. 在 hotfix branch 上实现 fix
+3. 对 fix 运行 /code-review
+4. 运行 tests
+5. 对 hotfix build 运行 /release-checklist
+6. Deploy 并 backport
 ```
 
-### Workflow 5: "I have an existing project and want to use this system"
+### Workflow 5: “已有项目，想使用这个 system”
 
 ```
-1. /start (choose Path D -- existing work)
-2. /project-stage-detect (determines current phase)
-3. /adopt (audits existing artifacts, builds migration plan)
-4. /design-system retrofit [path] (fill GDD gaps)
-5. /architecture-decision retrofit [path] (fill ADR gaps)
-6. /gate-check at appropriate transition
+1. /start（选择 Path D -- existing work）
+2. /project-stage-detect（确定 current phase）
+3. /adopt（审计 existing artifacts，构建 migration plan）
+4. /design-system retrofit [path]（填补 GDD gaps）
+5. /architecture-decision retrofit [path]（填补 ADR gaps）
+6. 在合适 transition 运行 /gate-check
 ```
 
-### Workflow 6: "Starting a new sprint"
+### Workflow 6: “开始新的 sprint”
 
 ```
-1. /retrospective (review last sprint)
-2. /sprint-plan new (create next sprint)
-3. /scope-check (ensure scope is manageable)
-4. /story-readiness per story before pickup
+1. /retrospective（review last sprint）
+2. /sprint-plan new（创建 next sprint）
+3. /scope-check（确保 scope 可控）
+4. pickup 前对每个 story 运行 /story-readiness
 5. Implement stories
-6. /story-done per completed story
-7. /sprint-status for quick progress checks
+6. 每个完成的 story 运行 /story-done
+7. 用 /sprint-status 快速检查进度
 ```
 
-### Workflow 7: "Shipping the game"
+### Workflow 7: “Shipping the game”
 
 ```
-1. /gate-check polish (verify Polish phase is complete)
-2. /tech-debt (decide what's acceptable at launch)
-3. /localize (final localization pass)
+1. /gate-check polish（验证 Polish phase 已完成）
+2. /tech-debt（决定 launch 时可接受的内容）
+3. /localize（final localization pass）
 4. /release-checklist v1.0.0
-5. /launch-checklist (full cross-department validation)
-6. /team-release (coordinate the release)
-7. /patch-notes and /changelog
+5. /launch-checklist（full cross-department validation）
+6. /team-release（coordinate the release）
+7. /patch-notes 和 /changelog
 8. Ship!
-9. /hotfix if anything breaks post-launch
-10. Post-mortem after launch stabilizes
+9. 如果 post-launch 出现问题，运行 /hotfix
+10. launch 稳定后做 Post-mortem
 ```
 
-### Workflow 8: "I'm lost / don't know what to do next"
+### Workflow 8: “迷路了，不知道下一步做什么”
 
 ```
-1. /help (reads your phase, checks artifacts, tells you what's next)
-2. If /help doesn't help: /project-stage-detect (full audit)
-3. If stage seems wrong: /gate-check at the transition you think you're at
+1. /help（读取你的 phase，检查 artifacts，告诉你下一步）
+2. 如果 /help 没帮上忙：/project-stage-detect（full audit）
+3. 如果 stage 看起来不对：在你认为所处的 transition 运行 /gate-check
 ```
 
 ---
 
 ## Tips for Getting the Most Out of the System
 
-1. **Always start with design, then implement.** The agent system is built
-   around the assumption that a design document exists before code is written.
-   Agents reference GDDs constantly.
+1. **始终先 design，再 implement。** agent system 的前提是写 code 前已经存在 design document。Agents 会持续 reference GDDs。
 
-2. **Use team skills for cross-cutting features.** Do not try to manually
-   coordinate 4 agents yourself -- let `/team-combat`, `/team-narrative`,
-   etc. handle the orchestration.
+2. **为 cross-cutting features 使用 team skills。** 不要试图自己手动协调 4 个 agents；让 `/team-combat`、`/team-narrative` 等处理 orchestration。
 
-3. **Trust the rules system.** When a rule flags something in your code, fix
-   it. The rules encode hard-won game development wisdom (data-driven values,
-   delta time, accessibility, etc.).
+3. **信任 rules system。** 当 rule 标记你的 code 中有问题时，修复它。rules 编码了来之不易的 game development wisdom（data-driven values、delta time、accessibility 等）。
 
-4. **Compact proactively.** At ~65-70% context usage, compact or `/clear`.
-   The pre-compact hook saves your progress. Do not wait until you are at the
-   limit.
+4. **主动 compact。** 在约 65-70% context usage 时，compact 或 `/clear`。pre-compact hook 会保存你的进度。不要等到触及 limit。
 
-5. **Use the right tier of agent.** Do not ask `creative-director` to write a
-   shader. Do not ask `qa-tester` to make design decisions. The hierarchy
-   exists for a reason.
+5. **使用正确 tier 的 agent。** 不要让 `creative-director` 写 shader。不要让 `qa-tester` 做 design decisions。hierarchy 的存在有其原因。
 
-6. **Run /help when uncertain.** It reads your actual project state and tells
-   you the single most important next step.
+6. **不确定时运行 /help。** 它会读取真实 project state，并告诉你唯一最重要的 next step。
 
-7. **Run `/design-review` before handing designs to programmers.** This
-   catches incomplete specs early, saving rework.
+7. **把 designs 交给 programmers 前运行 `/design-review`。** 这会尽早发现 incomplete specs，减少返工。
 
-8. **Run `/code-review` after every major feature.** Catch architectural
-   issues before they propagate.
+8. **每个 major feature 后运行 `/code-review`。** 在 architectural issues 扩散前抓住它们。
 
-9. **Prototype risky mechanics first.** A day of prototyping can save a week
-   of production on a mechanic that does not work.
+9. **先 prototype 风险 mechanics。** 对不成立的 mechanic 来说，一天 prototype 可以省下一周 production。
 
-10. **Keep your sprint plans honest.** Use `/scope-check` regularly. Scope
-    creep is the number one killer of indie games.
+10. **保持 sprint plans 诚实。** 定期使用 `/scope-check`。Scope creep 是 indie games 的头号杀手。
 
-11. **Document decisions with ADRs.** Future-you will thank present-you for
-    recording *why* things were built the way they were.
+11. **用 ADRs 记录 decisions。** 未来的你会感谢现在的你记录了事情为什么以这种方式构建。
 
-12. **Use the story lifecycle religiously.** `/story-readiness` before pickup,
-    `/story-done` after completion. This catches deviations early and keeps
-    the pipeline honest.
+12. **严格使用 story lifecycle。** pickup 前 `/story-readiness`，完成后 `/story-done`。这能尽早发现 deviations，并保持 pipeline 可靠。
 
-13. **Write to files early and often.** Incremental section writing means your
-    design decisions survive crashes and compactions. The file is the memory,
-    not the conversation.
+13. **尽早且经常写入文件。** incremental section writing 意味着 design decisions 能在 crashes 和 compactions 后保留。文件才是记忆，不是 conversation。
