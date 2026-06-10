@@ -1,0 +1,6 @@
+[gd_scene format=3 uid="uid://cwp5nrtyaf3h2"]
+
+[ext_resource type="Script" path="res://examples/arena-survival/TestEntry.cs" id="1_cstest"]
+
+[node name="TestEntry" type="Node"]
+script = ExtResource("1_cstest")

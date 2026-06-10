@@ -14,11 +14,12 @@ config/name="LynxFramework"
 config/description="LynxFramework — Modular Game Framework for Godot 4.x"
 config/version="0.1.0"
 run/main_scene="res://src/lynx-framework/Tests/FullIntegrationTestScene.tscn"
-config/features=PackedStringArray("4.6", "C#")
+config/features=PackedStringArray("4.6")
 
 [autoload]
 
 FrameworkEntry="*res://src/lynx-framework/FrameworkEntry.cs"
+FrameworkBridge="*uid://cigxbsmrsqlgc"
 
 [dotnet]
 

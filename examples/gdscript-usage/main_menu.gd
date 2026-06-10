@@ -11,7 +11,7 @@ extends Control
 
 func _ready() -> void:
 	# 翻译标题
-	title_label.text = FrameworkAPI.tr("MENU_TITLE")
+	title_label.text = FrameworkAPI.translate("MENU_TITLE")
 
 	# 检查存档，决定是否显示"继续"按钮
 	continue_button.visible = FrameworkAPI.save_exists("game", 0)

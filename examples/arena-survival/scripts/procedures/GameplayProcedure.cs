@@ -6,6 +6,7 @@ using LynxFramework.Core;
 using LynxFramework.Data;
 using LynxFramework.Entity;
 using LynxFramework.Input;
+using LynxFramework.Pool;
 using LynxFramework.Procedure;
 using LynxFramework.Scene;
 

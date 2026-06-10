@@ -192,7 +192,7 @@ static func register_setting(key: String, default_value: Variant) -> void:
 # 本地化
 # ═══════════════════════════════════════
 
-static func tr(key: String) -> String:
+static func translate(key: String) -> String:
 	return FrameworkBridge.Tr(key)
 
 static func set_language(lang: String) -> void:
