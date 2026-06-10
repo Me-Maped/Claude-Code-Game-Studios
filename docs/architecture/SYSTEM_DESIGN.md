@@ -1,9 +1,9 @@
 # LynxFramework 系统设计文档
 
-> **版本**：v1.0 Complete
-> **目标引擎**：Godot 4.6.3 (C# / .NET 8)
+> **版本**：v1.1 Complete
+> **目标引擎**：Godot 4.6.3 (C# / .NET 8 + GDScript)
 > **设计原则**：稳定内核不热更（性能优先），逻辑层支持热更新（灵活性优先），模块间零强依赖（通过 EventBus / 接口解耦）
-> **实现状态**：Phase 1-7 全部完成（74 个 C# 源文件，含集成测试 + 性能基准 + 示例项目）
+> **实现状态**：Phase 1-8 全部完成（含 C#/GDScript 桥接层）
 
 ---
 
@@ -3602,6 +3602,77 @@ sequenceDiagram
     M2-->>SAVE: data v3
     SAVE-->>Game: 返回迁移后的数据
 ```
+
+---
+
+## 13.5 C#/GDScript 桥接层
+
+### 架构分工
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                   GDScript 业务层 (可热更)                 │
+│  玩家逻辑 │ 敌人 AI │ UI 面板 │ 关卡脚本 │ 配置表读取       │
+│  通过 FrameworkAPI.xxx() 调用框架功能                      │
+├─────────────────────────────────────────────────────────┤
+│                   C# 桥接层 (稳定)                        │
+│  FrameworkBridge (静态方法) │ EventBusBridge (Callable)  │
+│  FrameworkAPI.gd (GDScript 侧单例)                       │
+├─────────────────────────────────────────────────────────┤
+│                   C# 框架核心 (稳定不热更)                  │
+│  FrameworkEntry │ ModuleManager │ EventBus │ 所有 Module   │
+├─────────────────────────────────────────────────────────┤
+│                   Godot Engine 4.6.3                      │
+└─────────────────────────────────────────────────────────┘
+```
+
+### 桥接文件
+
+| 文件 | 职责 |
+|------|------|
+| `Bridge/FrameworkBridge.cs` | C# 静态方法，暴露所有模块 API 给 GDScript |
+| `Bridge/EventBusBridge.cs` | 将 GDScript Callable 包装为 C# Action |
+| `Bridge/FrameworkAPI.gd` | GDScript 侧单例，提供 snake_case API |
+| `Bridge/VariantEventArg.cs` | Variant 包装事件载荷，跨语言数据传递 |
+
+### GDScript 使用方式
+
+```gdscript
+# 直接调用静态方法，无需获取模块实例
+FrameworkAPI.log_info("Hello from GDScript")
+FrameworkAPI.play_bgm("res://audio/bgm.ogg", 1.0)
+FrameworkAPI.open_ui("Inventory")
+
+# 事件订阅（返回 handler ID）
+var id = FrameworkAPI.subscribe("enemy_killed", _on_enemy_killed)
+FrameworkAPI.unsubscribe("enemy_killed", id)
+
+# 带数据事件
+FrameworkAPI.emit_variant("damage", {"amount": 50, "type": "fire"})
+var id2 = FrameworkAPI.subscribe_variant("damage", _on_damage)
+
+# 输入（支持缓冲）
+if FrameworkAPI.consume_action("attack"):
+    fire()
+
+# 存档
+FrameworkAPI.save_data("game", 0, {"level": 5})
+var data = FrameworkAPI.load_data("game", 0)
+
+# 数据表
+var sword = FrameworkAPI.get_data_row("weapons", "sword_01")
+```
+
+### 热更边界
+
+| 层级 | 语言 | 热更 | 文件位置 |
+|------|------|------|----------|
+| 框架核心 | C# | ❌ | `src/lynx-framework/` |
+| 桥接层 | C# + GDScript | ❌ | `src/lynx-framework/Bridge/` |
+| 游戏逻辑 | GDScript | ✅ | `scripts/` |
+| UI 面板 | GDScript | ✅ | `scripts/ui/` |
+| 关卡脚本 | GDScript | ✅ | `scripts/levels/` |
+| 配置数据 | JSON/TRES | ✅ | `data/` |
 
 ---
 
