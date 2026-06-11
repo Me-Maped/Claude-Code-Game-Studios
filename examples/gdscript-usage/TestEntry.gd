@@ -11,6 +11,7 @@ func _ready() -> void:
 	_test_events()
 	_test_settings()
 	_test_localization()
+	_test_gdscript_example_scripts()
 	print("[Test:gdscript-usage] === 测试完成 ===")
 
 # ─── 框架状态 ────────────────────────────────────────
@@ -58,3 +59,72 @@ func _test_localization() -> void:
 	print("[Test] get_language = ", lang)
 	var text := FrameworkAPI.translate("TEST_KEY")
 	print("[Test] translate('TEST_KEY') = ", text)
+
+# ─── GDScript 示例代码 ────────────────────────────────
+func _test_gdscript_example_scripts() -> void:
+	print("[Test:gdscript-usage] --- 示例代码接入 ---")
+	_attach_player_example()
+	_attach_main_menu_example()
+	_attach_gameplay_hud_example()
+
+func _attach_player_example() -> void:
+	var script := load("res://examples/gdscript-usage/player.gd")
+	var player := CharacterBody3D.new()
+	player.name = "PlayerExample"
+	player.set_physics_process(false)
+	player.set_process_input(false)
+	player.set_script(script)
+	add_child(player)
+	player.set_physics_process(false)
+	player.set_process_input(false)
+
+	FrameworkAPI.emit("player_heal")
+	player.queue_free()
+	print("[Test] Attached GDScript example: player.gd")
+
+func _attach_main_menu_example() -> void:
+	var script := load("res://examples/gdscript-usage/main_menu.gd")
+	var menu := Control.new()
+	menu.name = "MainMenuExample"
+
+	var title_label := Label.new()
+	title_label.name = "TitleLabel"
+	menu.add_child(title_label)
+
+	var vbox := VBoxContainer.new()
+	vbox.name = "VBoxContainer"
+	menu.add_child(vbox)
+
+	for button_name in ["StartButton", "ContinueButton", "SettingsButton", "QuitButton"]:
+		var button := Button.new()
+		button.name = button_name
+		vbox.add_child(button)
+
+	menu.set_script(script)
+	add_child(menu)
+	menu.queue_free()
+	print("[Test] Attached GDScript example: main_menu.gd")
+
+func _attach_gameplay_hud_example() -> void:
+	var script := load("res://examples/gdscript-usage/gameplay_hud.gd")
+	var hud := Control.new()
+	hud.name = "GameplayHUDExample"
+
+	var score_label := Label.new()
+	score_label.name = "ScoreLabel"
+	hud.add_child(score_label)
+
+	var hp_bar := ProgressBar.new()
+	hp_bar.name = "HPBar"
+	hp_bar.max_value = 100
+	hp_bar.value = 100
+	hud.add_child(hp_bar)
+
+	var hp_label := Label.new()
+	hp_label.name = "Label"
+	hp_bar.add_child(hp_label)
+
+	hud.set_script(script)
+	add_child(hud)
+	hud.queue_free()
+	print("[Test] Attached GDScript example: gameplay_hud.gd")

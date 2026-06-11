@@ -12,23 +12,23 @@ extends RefCounted
 # ═══════════════════════════════════════
 
 static func is_ready() -> bool:
-	return FrameworkBridge.IsReady
+	return FrameworkEntry.IsReady
 
 # ═══════════════════════════════════════
 # 日志
 # ═══════════════════════════════════════
 
 static func log_debug(msg: String) -> void:
-	FrameworkBridge.LogDebug(msg)
+	FrameworkEntry.LogDebug(msg)
 
 static func log_info(msg: String) -> void:
-	FrameworkBridge.LogInfo(msg)
+	FrameworkEntry.LogInfo(msg)
 
 static func log_warning(msg: String) -> void:
-	FrameworkBridge.LogWarning(msg)
+	FrameworkEntry.LogWarning(msg)
 
 static func log_error(msg: String) -> void:
-	FrameworkBridge.LogError(msg)
+	FrameworkEntry.LogError(msg)
 
 # ═══════════════════════════════════════
 # 事件
@@ -36,187 +36,187 @@ static func log_error(msg: String) -> void:
 
 ## 订阅无参事件。返回 handler ID，用于取消订阅。
 static func subscribe(event_id: String, callback: Callable) -> int:
-	return FrameworkBridge.Subscribe(event_id, callback)
+	return FrameworkEntry.Subscribe(event_id, callback)
 
 ## 订阅带数据事件。数据通过 Variant 传递。
 static func subscribe_variant(event_id: String, callback: Callable) -> int:
-	return FrameworkBridge.SubscribeVariant(event_id, callback)
+	return FrameworkEntry.SubscribeVariant(event_id, callback)
 
 ## 取消订阅。
 static func unsubscribe(event_id: String, handler_id: int) -> void:
-	FrameworkBridge.Unsubscribe(event_id, handler_id)
+	FrameworkEntry.Unsubscribe(event_id, handler_id)
 
 ## 发射无参事件。
 static func emit(event_id: String) -> void:
-	FrameworkBridge.Emit(event_id)
+	FrameworkEntry.Emit(event_id)
 
 ## 发射带数据事件。
 static func emit_variant(event_id: String, data: Variant) -> void:
-	FrameworkBridge.EmitVariant(event_id, data)
+	FrameworkEntry.EmitVariant(event_id, data)
 
 # ═══════════════════════════════════════
 # 场景
 # ═══════════════════════════════════════
 
 static func load_scene(path: String) -> void:
-	FrameworkBridge.LoadScene(path)
+	FrameworkEntry.LoadScene(path)
 
 static func switch_scene(path: String) -> void:
-	FrameworkBridge.SwitchScene(path)
+	FrameworkEntry.SwitchScene(path)
 
 static func go_back() -> void:
-	FrameworkBridge.GoBack()
+	FrameworkEntry.GoBack()
 
 # ═══════════════════════════════════════
 # UI
 # ═══════════════════════════════════════
 
 static func open_ui(ui_name: String) -> void:
-	FrameworkBridge.OpenUI(ui_name)
+	FrameworkEntry.OpenUI(ui_name)
 
 static func close_ui(ui_name: String) -> void:
-	FrameworkBridge.CloseUI(ui_name)
+	FrameworkEntry.CloseUI(ui_name)
 
 static func close_top_ui() -> void:
-	FrameworkBridge.CloseTopUI()
+	FrameworkEntry.CloseTopUI()
 
 static func close_all_ui() -> void:
-	FrameworkBridge.CloseAllUI()
+	FrameworkEntry.CloseAllUI()
 
 static func is_ui_open(ui_name: String) -> bool:
-	return FrameworkBridge.IsUIOpen(ui_name)
+	return FrameworkEntry.IsUIOpen(ui_name)
 
 # ═══════════════════════════════════════
 # 音频
 # ═══════════════════════════════════════
 
 static func play_bgm(path: String, fade_in: float = 0.0) -> void:
-	FrameworkBridge.PlayBGM(path, fade_in)
+	FrameworkEntry.PlayBGM(path, fade_in)
 
 static func stop_bgm(fade_out: float = 0.0) -> void:
-	FrameworkBridge.StopBGM(fade_out)
+	FrameworkEntry.StopBGM(fade_out)
 
 static func play_sfx(path: String) -> void:
-	FrameworkBridge.PlaySFX(path)
+	FrameworkEntry.PlaySFX(path)
 
 static func play_sfx_2d(path: String, pos: Vector2) -> void:
-	FrameworkBridge.PlaySFX2D(path, pos)
+	FrameworkEntry.PlaySFX2D(path, pos)
 
 static func play_sfx_3d(path: String, pos: Vector3) -> void:
-	FrameworkBridge.PlaySFX3D(path, pos)
+	FrameworkEntry.PlaySFX3D(path, pos)
 
 static func set_volume(bus_name: String, db: float) -> void:
-	FrameworkBridge.SetVolume(bus_name, db)
+	FrameworkEntry.SetVolume(bus_name, db)
 
 # ═══════════════════════════════════════
 # 输入
 # ═══════════════════════════════════════
 
 static func is_action_pressed(action: String) -> bool:
-	return FrameworkBridge.IsActionPressed(action)
+	return FrameworkEntry.IsActionPressed(action)
 
 static func is_action_just_pressed(action: String) -> bool:
-	return FrameworkBridge.IsActionJustPressed(action)
+	return FrameworkEntry.IsActionJustPressed(action)
 
 static func is_action_just_released(action: String) -> bool:
-	return FrameworkBridge.IsActionJustReleased(action)
+	return FrameworkEntry.IsActionJustReleased(action)
 
 static func get_input_vector(neg_x: String, pos_x: String, neg_y: String, pos_y: String) -> Vector2:
-	return FrameworkBridge.GetInputVector(neg_x, pos_x, neg_y, pos_y)
+	return FrameworkEntry.GetInputVector(neg_x, pos_x, neg_y, pos_y)
 
 static func disable_action(action: String) -> void:
-	FrameworkBridge.DisableAction(action)
+	FrameworkEntry.DisableAction(action)
 
 static func enable_action(action: String) -> void:
-	FrameworkBridge.EnableAction(action)
+	FrameworkEntry.EnableAction(action)
 
 static func buffer_action(action: String, max_time: float = 0.2) -> void:
-	FrameworkBridge.BufferAction(action, max_time)
+	FrameworkEntry.BufferAction(action, max_time)
 
 static func consume_action(action: String) -> bool:
-	return FrameworkBridge.ConsumeAction(action)
+	return FrameworkEntry.ConsumeAction(action)
 
 # ═══════════════════════════════════════
 # 摄像机
 # ═══════════════════════════════════════
 
 static func follow_target(target: Node, smoothing: float = 5.0) -> void:
-	FrameworkBridge.FollowTarget(target, smoothing)
+	FrameworkEntry.FollowTarget(target, smoothing)
 
 static func clear_camera_target() -> void:
-	FrameworkBridge.ClearCameraTarget()
+	FrameworkEntry.ClearCameraTarget()
 
 static func camera_shake(trauma: float, duration: float, decay: float = 5.0) -> void:
-	FrameworkBridge.CameraShake(trauma, duration, decay)
+	FrameworkEntry.CameraShake(trauma, duration, decay)
 
 # ═══════════════════════════════════════
 # 流程
 # ═══════════════════════════════════════
 
 static func set_procedure(proc_name: String) -> void:
-	FrameworkBridge.SetProcedure(proc_name)
+	FrameworkEntry.SetProcedure(proc_name)
 
 static func get_current_procedure() -> String:
-	return FrameworkBridge.GetCurrentProcedure()
+	return FrameworkEntry.GetCurrentProcedure()
 
 # ═══════════════════════════════════════
 # 存档
 # ═══════════════════════════════════════
 
 static func save_data(slot_key: String, slot_index: int, data: Dictionary) -> void:
-	FrameworkBridge.SaveData(slot_key, slot_index, data)
+	FrameworkEntry.SaveData(slot_key, slot_index, data)
 
 static func load_data(slot_key: String, slot_index: int) -> Dictionary:
-	return FrameworkBridge.LoadData(slot_key, slot_index)
+	return FrameworkEntry.LoadData(slot_key, slot_index)
 
 static func delete_save(slot_key: String, slot_index: int) -> void:
-	FrameworkBridge.DeleteSave(slot_key, slot_index)
+	FrameworkEntry.DeleteSave(slot_key, slot_index)
 
 static func save_exists(slot_key: String, slot_index: int) -> bool:
-	return FrameworkBridge.SaveExists(slot_key, slot_index)
+	return FrameworkEntry.SaveExists(slot_key, slot_index)
 
 # ═══════════════════════════════════════
 # 设置
 # ═══════════════════════════════════════
 
 static func get_setting(key: String) -> Variant:
-	return FrameworkBridge.GetSetting(key)
+	return FrameworkEntry.GetSetting(key)
 
 static func set_setting(key: String, value: Variant) -> void:
-	FrameworkBridge.SetSetting(key, value)
+	FrameworkEntry.SetSetting(key, value)
 
 static func register_setting(key: String, default_value: Variant) -> void:
-	FrameworkBridge.RegisterSetting(key, default_value)
+	FrameworkEntry.RegisterSetting(key, default_value)
 
 # ═══════════════════════════════════════
 # 本地化
 # ═══════════════════════════════════════
 
 static func translate(key: String) -> String:
-	return FrameworkBridge.Tr(key)
+	return FrameworkEntry.Tr(key)
 
 static func set_language(lang: String) -> void:
-	FrameworkBridge.SetLanguage(lang)
+	FrameworkEntry.SetLanguage(lang)
 
 static func get_language() -> String:
-	return FrameworkBridge.GetLanguage()
+	return FrameworkEntry.GetLanguage()
 
 # ═══════════════════════════════════════
 # 数据表
 # ═══════════════════════════════════════
 
 static func get_data_row(table: String, id: String) -> Dictionary:
-	return FrameworkBridge.GetDataRow(table, id)
+	return FrameworkEntry.GetDataRow(table, id)
 
 static func load_table(table_name: String) -> void:
-	FrameworkBridge.LoadTable(table_name)
+	FrameworkEntry.LoadTable(table_name)
 
 # ═══════════════════════════════════════
 # 实体
 # ═══════════════════════════════════════
 
 static func spawn_entity(entity_name: String, parent: Node, pos: Vector3 = Vector3.ZERO) -> Node:
-	return FrameworkBridge.SpawnEntity(entity_name, parent, pos)
+	return FrameworkEntry.SpawnEntity(entity_name, parent, pos)
 
 static func destroy_entity(entity: Node) -> void:
-	FrameworkBridge.DestroyEntity(entity)
+	FrameworkEntry.DestroyEntity(entity)

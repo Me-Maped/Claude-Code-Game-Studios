@@ -180,7 +180,7 @@ graph TB
 
 ### 2.1 FrameworkEntry
 
-**职责**：Autoload 单例，框架启动入口，按顺序初始化所有模块。
+**职责**：Autoload 单例，框架启动入口，按顺序初始化所有模块，并直接向 GDScript 暴露稳定的非泛型调用入口。
 
 ```mermaid
 classDiagram
@@ -190,6 +190,8 @@ classDiagram
         -bool _isReady
         +static Instance : FrameworkEntry
         +T GetModule~T~() T
+        +bool IsReady
+        +GDScript API methods
         +_EnterTree() void
         +_Ready() void
         +_Process(double delta) void
@@ -254,6 +256,16 @@ public partial class FrameworkEntry : Node
     }
 
     public T GetModule<T>() where T : IModule => _moduleManager.GetModule<T>();
+
+    // GDScript API：直接封装各模块能力，供 FrameworkAPI.gd 调用。
+    public bool IsReady => _isReady;
+    public void LogInfo(string message) => GetModule<LogService>()?.Info(message);
+    public int Subscribe(string eventId, Callable callback) { ... }
+    public void EmitVariant(string eventId, Variant data) { ... }
+    public void OpenUI(string uiName) => GetModule<UIModule>()?.OpenUI(uiName);
+    public void PlayBGM(string path, float fadeIn = 0f) { ... }
+    public bool ConsumeAction(string action) { ... }
+    public void SaveData(string slotKey, int slotIndex, Dictionary data) { ... }
 
     public void Shutdown()
     {
@@ -3615,12 +3627,12 @@ sequenceDiagram
 │  玩家逻辑 │ 敌人 AI │ UI 面板 │ 关卡脚本 │ 配置表读取       │
 │  通过 FrameworkAPI.xxx() 调用框架功能                      │
 ├─────────────────────────────────────────────────────────┤
-│                   C# 桥接层 (稳定)                        │
-│  FrameworkBridge (静态方法) │ EventBusBridge (Callable)  │
-│  FrameworkAPI.gd (GDScript 侧单例)                       │
+│                   GDScript API 外观 (稳定)                 │
+│  FrameworkAPI.gd (snake_case 封装)                        │
 ├─────────────────────────────────────────────────────────┤
 │                   C# 框架核心 (稳定不热更)                  │
-│  FrameworkEntry │ ModuleManager │ EventBus │ 所有 Module   │
+│  FrameworkEntry (Autoload + GDScript API)                 │
+│  ModuleManager │ EventBus │ EventBusBridge │ 所有 Module    │
 ├─────────────────────────────────────────────────────────┤
 │                   Godot Engine 4.6.3                      │
 └─────────────────────────────────────────────────────────┘
@@ -3630,15 +3642,14 @@ sequenceDiagram
 
 | 文件 | 职责 |
 |------|------|
-| `Bridge/FrameworkBridge.cs` | C# 静态方法，暴露所有模块 API 给 GDScript |
-| `Bridge/EventBusBridge.cs` | 将 GDScript Callable 包装为 C# Action |
-| `Bridge/FrameworkAPI.gd` | GDScript 侧单例，提供 snake_case API |
-| `Bridge/VariantEventArg.cs` | Variant 包装事件载荷，跨语言数据传递 |
+| `FrameworkEntry.cs` | 唯一 Autoload；直接暴露 GDScript 可调用的非泛型 API |
+| `Bridge/FrameworkAPI.gd` | GDScript 侧 `RefCounted` 外观，提供 snake_case API |
+| `Bridge/EventBusBridge.cs` | 将 GDScript `Callable` 包装为 C# `Action`；同文件内定义 `VariantEventArg` |
 
 ### GDScript 使用方式
 
 ```gdscript
-# 直接调用静态方法，无需获取模块实例
+# 通过 FrameworkAPI 调用 FrameworkEntry 暴露的稳定接口，无需获取模块实例
 FrameworkAPI.log_info("Hello from GDScript")
 FrameworkAPI.play_bgm("res://audio/bgm.ogg", 1.0)
 FrameworkAPI.open_ui("Inventory")
@@ -3668,7 +3679,8 @@ var sword = FrameworkAPI.get_data_row("weapons", "sword_01")
 | 层级 | 语言 | 热更 | 文件位置 |
 |------|------|------|----------|
 | 框架核心 | C# | ❌ | `src/lynx-framework/` |
-| 桥接层 | C# + GDScript | ❌ | `src/lynx-framework/Bridge/` |
+| GDScript API 外观 | GDScript | ❌ | `src/lynx-framework/Bridge/FrameworkAPI.gd` |
+| Callable 适配 | C# | ❌ | `src/lynx-framework/Bridge/EventBusBridge.cs` |
 | 游戏逻辑 | GDScript | ✅ | `scripts/` |
 | UI 面板 | GDScript | ✅ | `scripts/ui/` |
 | 关卡脚本 | GDScript | ✅ | `scripts/levels/` |
@@ -3799,12 +3811,15 @@ public partial class HotUpdateEventArg : EventArg { public string Version; }
 
 > **实现日期**：2026-06-01
 > **引擎版本**：Godot 4.6.3 / .NET 8
-> **源文件总数**：65 个 C# 文件
+> **源文件总数**：67 个 C# 文件
 
 ```
 src/lynx-framework/
 ├── IModule.cs                          # 模块接口
 ├── FrameworkEntry.cs                   # Autoload 单例，框架启动入口
+├── Bridge/
+│   ├── EventBusBridge.cs               # GDScript Callable 事件适配（含 VariantEventArg）
+│   └── FrameworkAPI.gd                 # GDScript snake_case API 外观
 ├── Core/
 │   ├── ModuleManager.cs                # 模块注册/查询/生命周期管理
 │   ├── EventBus.cs                     # 高性能全局事件总线（延迟队列）
