@@ -1,8 +1,17 @@
 # Godot Rendering — Quick Reference
 
-Last verified: 2026-02-12 | Engine: Godot 4.6
+Last verified: 2026-10-17 (4.7 changes); 2026-02-12 (rest) | Engine: Godot 4.7
 
 ## What Changed Since ~4.3 (LLM Cutoff)
+
+### 4.7 Changes
+- **`AreaLight3D`**: real-time rectangular area lights
+- **HDR output** on Windows, macOS, iOS, visionOS and Linux (Wayland)
+- **`DrawableTexture2D`**: simple API for drawing on textures (4.7 release notes: https://godotengine.org/releases/4.7/)
+- **`CanvasItem` lines**: no antialiasing feather, so lines look thinner
+- **`LinearToSRGB` visual shader** no longer clamps to `[0.0, 1.0]` (Forward+, Mobile)
+- **`get_format()`** moved from `ImageTexture` / `PortableCompressedTexture2D` to `Texture2D`
+- **`rendering/reflections/sky_reflections/roughness_layers`** default `7` → `8` (4.7 migration guide: https://docs.godotengine.org/en/stable/tutorials/migrating/upgrading_to_godot_4.7.html)
 
 ### 4.6 Changes
 - **D3D12 is the default rendering backend on Windows** (was Vulkan)
@@ -19,7 +28,9 @@ Last verified: 2026-02-12 | Engine: Godot 4.6
 
 ### 4.4 Changes
 - **`RenderingDevice.draw_list_begin`**: Many parameters removed; optional `breadcrumb` added
-- **Shader texture types**: Changed from `Texture2D` to `Texture` base type
+- **`Shader` default-texture methods**: `set_default_texture_parameter()` takes and
+  `get_default_texture_parameter()` returns `Texture`, not `Texture2D` (the shading
+  language's `sampler2D` / `texture()` did not change)
 - **Particles `.restart()`**: Added optional `keep_seed` parameter
 
 ### 4.3 Changes (in training data)
@@ -55,5 +66,7 @@ Windows default backend: D3D12 (was Vulkan pre-4.6)
 ## Common Mistakes
 - Assuming Vulkan is the default backend on Windows (D3D12 since 4.6)
 - Using manual viewport chains instead of Compositor for post-processing
-- Using `Texture2D` in shader uniform types (use `Texture` since 4.4)
+- Passing or expecting `Texture2D` in `Shader.set_default_texture_parameter()` /
+  `get_default_texture_parameter()` (the type is `Texture` since 4.4 — the shading
+  language's `sampler2D` / `texture()` did not change)
 - Not using Shader Baker for projects with many shader variants

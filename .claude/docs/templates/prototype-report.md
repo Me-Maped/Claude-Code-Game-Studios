@@ -2,7 +2,7 @@
 
 > **Date**: [YYYY-MM-DD]
 > **Prototype Path**: [HTML / Engine / Paper]
-> **Concept File**: design/gdd/game-concept.md (if exists)
+> **Concept File**: design/gdd/game-concept.md, or design/game-brief.md (if either exists)
 
 ---
 
@@ -51,7 +51,7 @@ directly where possible.]
 
 ---
 
-## Recommendation: [PROCEED / PIVOT / KILL]
+## Recommendation: [PROCEED / PIVOT / KILL / NOT ASSESSED — built but nobody has played it]
 
 [One paragraph explaining the recommendation with evidence from the result above.]
 

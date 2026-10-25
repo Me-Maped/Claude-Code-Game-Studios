@@ -41,6 +41,11 @@ Users:
 
 ## 🔄 Collaborative Workflow Pattern
 
+> **At `rigor: minimal` (the default), the design record is the one-page
+> `design/game-brief.md`, not a set of GDDs.** `/brainstorm` writes it, and the
+> same question → options → decision → draft → approval protocol applies to it.
+> The GDD examples below show the `standard` and `full` tiers.
+
 Every agent interaction should follow this pattern:
 
 ### Pattern: Question → Options → Decision → Draft → Approval
@@ -360,7 +365,11 @@ pattern:
 ❌ **Don't use it for:**
 - Open-ended discovery questions ("What excites you about roguelikes?")
 - Single yes/no confirmations ("May I write to file?")
-- When running as a Task subagent (tool may not be available)
+- When running as a subagent (spawned through the `Agent` tool), which never gets
+  the tool: end with the options as a short labeled list and let the caller ask
+
+A question that comes back skipped, dismissed or empty is not an answer. Act on
+nothing; ask again in plain text and wait (`.claude/docs/automation-modes.md`).
 
 ### Format Guidelines
 
@@ -673,16 +682,3 @@ WHEN implementing:
 2. Flag any deviations from design docs
 3. Ask about ambiguities rather than assuming
 ```
-
----
-
-## Implementation Status
-
-This principle has been fully embedded across the project:
-
-- **CLAUDE.md** — Collaboration protocol section added
-- **All 48 agent definitions** — Updated to enforce question-asking and approval
-- **All skills** — Updated to require approval before writing
-- **WORKFLOW-GUIDE.md** — Rewritten with collaborative examples
-- **README.md** — Clarifies collaborative (not autonomous) design
-- **AskUserQuestion tool** — Integrated into 16 skills for structured option UI
